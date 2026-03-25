@@ -140,7 +140,7 @@ Store:
 
 Responsibilities:
 
-* connect to external LLM API (HF / OpenAI)
+* use model: openai/gpt-oss-120b
 * manage prompts
 * store chat history
 

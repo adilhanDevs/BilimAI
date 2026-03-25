@@ -19,7 +19,8 @@ Edit `.env`:
 - `USE_POSTGRES=true` if you want PostgreSQL
 - `REDIS_URL` and `CELERY_BROKER_URL` if you want Redis-backed caching / Celery
 - (optional) AI:
-  - `OPENAI_API_KEY`
+  - `OPENAI_API_URL` (for OpenRouter: `https://openrouter.ai/api/v1/chat/completions`)
+  - `OPENROUTER_API_KEY` (preferred) or `OPENAI_API_KEY` (fallback) - your OpenRouter API key
   - `OPENAI_MODEL`
 
 ## 2) Install dependencies and run migrations

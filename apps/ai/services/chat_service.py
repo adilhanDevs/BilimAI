@@ -34,9 +34,16 @@ class ChatService:
 
     @classmethod
     def _call_openai(cls, messages: list[dict[str, str]]) -> str:
-        api_key = getattr(settings, "OPENAI_API_KEY", "") or ""
+        # OpenRouter is OpenAI-compatible but uses a different key name in practice.
+        # Support both env vars to make local setup less confusing.
+        api_key = (
+            getattr(settings, "HF_API_TOKEN", "")
+            or getattr(settings, "OPENROUTER_API_KEY", "")
+            or getattr(settings, "OPENAI_API_KEY", "")
+            or ""
+        )
         if not api_key:
-            raise ChatServiceError("OPENAI_API_KEY is not configured")
+            raise ChatServiceError("HF_API_TOKEN/OPENROUTER_API_KEY/OPENAI_API_KEY is not configured")
 
         url = getattr(settings, "OPENAI_API_URL", "https://api.openai.com/v1/chat/completions")
         model = getattr(settings, "OPENAI_MODEL", "gpt-4o-mini")
@@ -81,7 +88,12 @@ class ChatService:
     @classmethod
     def generate_reply(cls, user_text: str, history: list[dict[str, str]]) -> str:
         messages = cls._build_messages(user_text, history)
-        api_key = getattr(settings, "OPENAI_API_KEY", "") or ""
+        api_key = (
+            getattr(settings, "HF_API_TOKEN", "")
+            or getattr(settings, "OPENROUTER_API_KEY", "")
+            or getattr(settings, "OPENAI_API_KEY", "")
+            or ""
+        )
         if not api_key:
             return cls._mock_reply(user_text)
         return cls._call_openai(messages)

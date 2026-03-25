@@ -130,6 +130,11 @@ Notes:
 
 If `OPENAI_API_KEY` is not set in the server environment, the backend returns a mock reply instead of calling a real LLM.
 
+To use OpenRouter (OpenAI-compatible), set:
+- `OPENAI_API_URL=https://openrouter.ai/api/v1/chat/completions`
+- `OPENAI_MODEL=openai/gpt-oss-120b` (or another OpenRouter model id)
+- `OPENROUTER_API_KEY` (preferred) or `OPENAI_API_KEY` (fallback) with your OpenRouter API key
+
 2. Chat history
 - `GET /api/ai/history/`
 - Results are paginated using the project pagination settings.
