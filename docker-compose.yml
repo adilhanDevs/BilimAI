@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bilimai
+      POSTGRES_USER: bilimai
+      POSTGRES_PASSWORD: bilimai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             gunicorn BilimAI.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    environment:
+      DJANGO_SECRET_KEY: docker-compose-dev-change-me
+      USE_POSTGRES: "true"
+      POSTGRES_DB: bilimai
+      POSTGRES_USER: bilimai
+      POSTGRES_PASSWORD: bilimai
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      ALLOWED_HOSTS: localhost,127.0.0.1,web,0.0.0.0
+      DEBUG: "false"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build: .
+    command: celery -A BilimAI worker -l info
+    environment:
+      DJANGO_SECRET_KEY: docker-compose-dev-change-me
+      USE_POSTGRES: "true"
+      POSTGRES_DB: bilimai
+      POSTGRES_USER: bilimai
+      POSTGRES_PASSWORD: bilimai
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      CELERY_BROKER_URL: redis://redis:6379/1
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  pgdata:
