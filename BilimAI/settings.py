@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-dev-only-change-me")
 DEBUG = os.environ.get("DEBUG", "true").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = ["adilhan.pythonanywhere.com", "bilimai.netlify.app"]
+ALLOWED_HOSTS = ["adilhan.pythonanywhere.com", "bilimai.netlify.app", "localhost"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",

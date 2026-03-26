@@ -1,4 +1,6 @@
 from rest_framework import permissions, viewsets
+from drf_spectacular.utils import extend_schema, OpenApiTypes
+from common.serializers import ApiResponseSerializer
 
 from common.responses import api_response
 
@@ -15,6 +17,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Subscription.objects.filter(user=self.request.user).select_related("user")
 
+    @extend_schema(responses=ApiResponseSerializer)
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         for sub in queryset:
@@ -22,12 +25,14 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return api_response(data=serializer.data)
 
+    @extend_schema(responses=ApiResponseSerializer)
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         SubscriptionService.sync_subscription_flags(instance)
         serializer = self.get_serializer(instance)
         return api_response(data=serializer.data)
 
+    @extend_schema(request=SubscriptionSerializer, responses={201: ApiResponseSerializer})
     def create(self, request, *args, **kwargs):
         from rest_framework import status
 

@@ -1,6 +1,8 @@
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenRefreshView
+from drf_spectacular.utils import extend_schema, OpenApiTypes, OpenApiExample
+from common.serializers import ApiResponseSerializer
 
 from common.responses import api_response
 
@@ -11,6 +13,25 @@ from .services.user_service import UserService
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: ApiResponseSerializer},
+        examples=[
+            OpenApiExample(
+                'Register example',
+                value={
+                    'nickname': 'johndoe',
+                    'email': 'john@example.com',
+                    'first_name': 'John',
+                    'last_name': 'Doe',
+                    'password': 'strongpassword',
+                    'password2': 'strongpassword',
+                },
+                request_only=True,
+                response_only=False,
+            )
+        ],
+    )
     def post(self, request, *args, **kwargs):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -28,6 +49,18 @@ class RegisterView(APIView):
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(
+        request=LoginSerializer,
+        responses={200: ApiResponseSerializer},
+        examples=[
+            OpenApiExample(
+                'Login example',
+                value={'nickname': 'johndoe', 'password': 'strongpassword'},
+                request_only=True,
+                response_only=False,
+            )
+        ],
+    )
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -39,11 +72,13 @@ class LoginView(APIView):
 
 
 class MeView(APIView):
+    @extend_schema(responses=ApiResponseSerializer)
     def get(self, request, *args, **kwargs):
         return api_response(data=UserSerializer(request.user).data)
 
 
 class BilimTokenRefreshView(TokenRefreshView):
+    @extend_schema(request=OpenApiTypes.OBJECT, responses={200: ApiResponseSerializer, 401: ApiResponseSerializer})
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code != status.HTTP_200_OK:

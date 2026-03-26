@@ -2,6 +2,8 @@ from rest_framework import permissions, status
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema, OpenApiTypes
+from common.serializers import ApiResponseSerializer
 
 from common.permissions import HasActiveSubscription
 from common.responses import api_response
@@ -14,6 +16,10 @@ from .services.chat_service import ChatService, ChatServiceError
 class ChatView(APIView):
     permission_classes = [permissions.IsAuthenticated, HasActiveSubscription]
 
+    @extend_schema(
+        request=ChatRequestSerializer,
+        responses={201: ApiResponseSerializer, 502: ApiResponseSerializer},
+    )
     def post(self, request, *args, **kwargs):
         ser = ChatRequestSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -50,6 +56,7 @@ class ChatHistoryView(ListAPIView):
     def get_queryset(self):
         return ChatMessage.objects.filter(user=self.request.user).select_related("user").order_by("-created_at")
 
+    @extend_schema(response=ApiResponseSerializer)
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         return Response({"success": True, "data": response.data, "error": None})
