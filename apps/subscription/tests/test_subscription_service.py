@@ -35,3 +35,12 @@ class SubscriptionServiceTests(TestCase):
 
     def test_user_has_active_subscription_false_without_row(self):
         self.assertFalse(SubscriptionService.user_has_active_subscription(self.user))
+
+    def test_user_has_active_subscription_true_when_active(self):
+        Subscription.objects.create(
+            user=self.user,
+            plan_type=Subscription.PlanType.MONTHLY,
+            is_active=True,
+            last_payment_date=timezone.now(),
+        )
+        self.assertTrue(SubscriptionService.user_has_active_subscription(self.user))
