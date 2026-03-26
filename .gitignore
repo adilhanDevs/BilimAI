@@ -9,6 +9,7 @@ venv/
 env/
 .venv/
 .venv_test_tmp/
+myenv/
 
 # Django
 db.sqlite3

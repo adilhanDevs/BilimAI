@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "drf_spectacular",
     "apps.users.apps.UsersConfig",
     "apps.subscription.apps.SubscriptionConfig",
     "apps.gamification.apps.GamificationConfig",
@@ -136,6 +137,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "common.exceptions.bilim_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "common.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 20,
@@ -144,6 +146,15 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {"anon": "60/minute", "user": "1000/minute"},
+}
+
+# drf-spectacular settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": "BilimAI API",
+    "DESCRIPTION": "BilimAI REST API",
+    "VERSION": "1.0.0",
+    # Add authentication schemes automatically
+    "SCHEMA_PATH_PREFIX": "/api",
 }
 
 SIMPLE_JWT = {
