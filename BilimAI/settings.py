@@ -155,7 +155,7 @@ CORS_ALLOWED_ORIGINS = [
     o.strip()
     for o in os.environ.get(
         "CORS_ALLOWED_ORIGINS",
-        "https://adilhan.pythonanywhere.com,https://bilimai.netlify.app",
+        "https://adilhan.pythonanywhere.com,https://bilimai.netlify.app,http://localhost:3000",
     ).split(",")
     if o.strip()
 ]
