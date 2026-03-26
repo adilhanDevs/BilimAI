@@ -47,4 +47,4 @@ class SubscriptionService:
         if not subscription:
             return False
         SubscriptionService.sync_subscription_flags(subscription)
-        return subscription.is_active
+        return subscription.is_actGamificationActivityViewive

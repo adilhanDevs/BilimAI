@@ -172,8 +172,7 @@ CORS_ALLOWED_ORIGINS = [
     if o.strip()
 ]
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+PENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "")
 OPENAI_API_URL = os.environ.get(
     "OPENAI_API_URL",

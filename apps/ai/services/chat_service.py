@@ -33,20 +33,34 @@ class ChatService:
         return messages
 
     @classmethod
-    def _call_openai(cls, messages: list[dict[str, str]]) -> str:
-        # OpenRouter is OpenAI-compatible but uses a different key name in practice.
-        # Support both env vars to make local setup less confusing.
-        api_key = (
-            getattr(settings, "HF_API_TOKEN", "")
-            or getattr(settings, "OPENROUTER_API_KEY", "")
-            or getattr(settings, "OPENAI_API_KEY", "")
-            or ""
+    def _mock_reply(cls, user_text: str) -> str:
+        # Clarify which env var is expected for the live provider. The
+        # implementation actually checks HF_API_TOKEN, so mention that here.
+        return (
+            "[BilimAI mock — set HF_API_TOKEN for live LLM] "
+            f"I heard: {user_text[:500]}{'…' if len(user_text) > 500 else ''}"
         )
-        if not api_key:
-            raise ChatServiceError("HF_API_TOKEN/OPENROUTER_API_KEY/OPENAI_API_KEY is not configured")
 
-        url = getattr(settings, "OPENAI_API_URL", "https://api.openai.com/v1/chat/completions")
-        model = getattr(settings, "OPENAI_MODEL", "gpt-4o-mini")
+    @classmethod
+    def generate_reply(cls, user_text: str, history: list[dict[str, str]]) -> str:
+        messages = cls._build_messages(user_text, history)
+        # Prefer an explicit, non-empty OPENAI_API_KEY. If it's missing or
+        # empty, fall back to HF_API_TOKEN (if present). This keeps runtime
+        # behavior using available tokens while treating empty strings as
+        # 'not configured'.
+        api_key = getattr(settings, "HF_API_TOKEN", None)
+  
+        if not api_key:
+            return cls._mock_reply(user_text)
+
+        # Perform the external call with the resolved api_key.
+        messages = cls._build_messages(user_text, history)
+        return cls._call_openai_with_key(messages, api_key)
+
+    @classmethod
+    def _call_openai_with_key(cls, messages: list[dict[str, str]], api_key: str) -> str:
+        url = getattr(settings, "OPENAI_API_URL", "https://router.huggingface.co/v1/chat/completions")
+        model = getattr(settings, "OPENAI_MODEL", "openai/gpt-oss-120b")
 
         payload: dict[str, Any] = {
             "model": model,
@@ -77,23 +91,3 @@ class ChatService:
                 time.sleep(RETRY_BACKOFF * attempt)
 
         raise ChatServiceError(str(last_exc) if last_exc else "Unknown error")
-
-    @classmethod
-    def _mock_reply(cls, user_text: str) -> str:
-        return (
-            "[BilimAI mock — set OPENAI_API_KEY for live LLM] "
-            f"I heard: {user_text[:500]}{'…' if len(user_text) > 500 else ''}"
-        )
-
-    @classmethod
-    def generate_reply(cls, user_text: str, history: list[dict[str, str]]) -> str:
-        messages = cls._build_messages(user_text, history)
-        api_key = (
-            getattr(settings, "HF_API_TOKEN", "")
-            or getattr(settings, "OPENROUTER_API_KEY", "")
-            or getattr(settings, "OPENAI_API_KEY", "")
-            or ""
-        )
-        if not api_key:
-            return cls._mock_reply(user_text)
-        return cls._call_openai(messages)

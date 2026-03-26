@@ -27,7 +27,8 @@ class GamificationSessionView(APIView):
 
 class GamificationActivityView(APIView):
     permission_classes = [permissions.IsAuthenticated, HasActiveSubscription]
-    @extend_schema(response=ApiResponseSerializer)
+
+    @extend_schema(responses=ApiResponseSerializer)
     def get(self, request, *args, **kwargs):
         logs = GamificationService.recent_activity(request.user)
         serializer = ActivityLogSerializer(logs, many=True)
