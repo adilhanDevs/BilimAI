@@ -1,6 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.test import override_settings
 
 from apps.subscription.models import Subscription
 from apps.subscription.services.subscription_service import SubscriptionService
@@ -37,6 +38,7 @@ class AuthAPITests(APITestCase):
         self.assertEqual(me.json()["data"]["nickname"], "apiuser")
 
 
+@override_settings(HF_API_TOKEN=None)
 class ProtectedRouteTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(

@@ -28,6 +28,9 @@ class ChatService:
     def _build_messages(user_text: str, history: List[Dict[str, str]]) -> List[Dict[str, str]]:
         messages: List[Dict[str, str]] = [
             {"role": "system", "content": ChatService.SYSTEM_PROMPT},
+    def _build_messages(user_text: str, history: list[dict[str, str]]) -> list[dict[str, str]]:
+        messages: list[dict[str, str]] = [
+            {"role": "system", "content": "You are BilimAI — a friendly, strict-but-supportive Kyrgyz language teacher. UI language: Russian. Teach step-by-step (assume A1 if not specified). Be interactive: ask the student to answer, then correct. Correct format: 1) student's sentence, 2) corrected version, 3) brief rule, 4) 2–3 examples, 5) 1 short exercise. Use Kyrgyz (Cyrillic) by default; Latin only if requested. Keep replies structured: Тема / Правило / Примеры / Практика / Мини-домашка."},
         ]
         for row in history:
             role = row.get("role")
@@ -194,3 +197,4 @@ class ChatService:
 
         # All retries exhausted
         raise ChatServiceError(str(last_exc) if last_exc else "Unknown error")
+    
