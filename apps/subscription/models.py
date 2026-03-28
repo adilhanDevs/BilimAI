@@ -19,6 +19,7 @@ class SubscriptionPlan(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
     currency = models.CharField(max_length=10, default="KGS")
     is_active = models.BooleanField(default=True)
+    link = models.URLField(blank=True, null=True)
     features = models.JSONField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -168,3 +169,4 @@ class SubscriptionPayment(models.Model):
                     sub.ends_at = sub.ends_at + timedelta(days=plan_days)
 
             sub.save()
+

@@ -135,7 +135,7 @@ class ChatHistoryView(ListAPIView):
 
 class ChatSessionView(ListCreateAPIView):
     serializer_class = ChatSessionSerializer
-    permission_classes = [permissions.IsAuthenticated, HasActiveSubscription]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return ChatSession.objects.filter(user=self.request.user).order_by("-updated_at", "-created_at")
