@@ -108,7 +108,7 @@ class ChatView(APIView):
 
 class ChatHistoryView(ListAPIView):
     serializer_class = ChatMessageSerializer
-    permission_classes = [permissions.IsAuthenticated, HasActiveSubscription]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         request = self.request
