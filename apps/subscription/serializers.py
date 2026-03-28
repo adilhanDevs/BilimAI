@@ -7,7 +7,7 @@ from apps.subscription.services.subscription_service import SubscriptionService
 class SubscriptionPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriptionPlan
-        fields = ("id", "name", "code", "duration_days", "price", "currency", "features")
+        fields = ("id", "name", "code", "duration_days","description" ,"price", "currency", "features")
         read_only_fields = fields
 
 

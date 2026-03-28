@@ -3,12 +3,7 @@ from django.contrib import admin
 from .models import Subscription, SubscriptionPlan, SubscriptionPayment
 
 
-@admin.register(SubscriptionPlan)
-class SubscriptionPlanAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "price", "duration_days", "is_active")
-    list_filter = ("is_active",)
-    search_fields = ("name", "code")
-
+admin.site.register(SubscriptionPlan)
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):

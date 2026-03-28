@@ -20,6 +20,7 @@ class SubscriptionPlan(models.Model):
     currency = models.CharField(max_length=10, default="KGS")
     is_active = models.BooleanField(default=True)
     features = models.JSONField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

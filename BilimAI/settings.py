@@ -15,7 +15,7 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-dev-only-change-me")
 DEBUG = os.environ.get("DEBUG", "true").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = ["adilhan.pythonanywhere.com", "bilimai.netlify.app", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["adilhan.pythonanywhere.com", "bilimai-prod.netlify.app", "localhost", "127.0.0.1"]
 
 HAS_WHITENOISE = importlib.util.find_spec("whitenoise") is not None
 
@@ -161,7 +161,7 @@ CORS_ALLOWED_ORIGINS = [
     o.strip()
     for o in os.environ.get(
         "CORS_ALLOWED_ORIGINS",
-        "https://adilhan.pythonanywhere.com,https://bilimai.netlify.app,http://localhost:3000",
+        "https://adilhan.pythonanywhere.com,https://bilimai-prod.netlify.app,http://localhost:3000",
     ).split(",")
     if o.strip()
 ]

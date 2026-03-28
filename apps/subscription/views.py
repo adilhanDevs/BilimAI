@@ -16,7 +16,7 @@ class SubscriptionPlanViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        return SubscriptionPlan.objects.filter(is_active=True)
+        return SubscriptionPlan.objects.filter(is_active=True).order_by("price")
 
     @extend_schema(responses=ApiResponseSerializer)
     def list(self, request, *args, **kwargs):
