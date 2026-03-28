@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class SubscriptionPlanViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SubscriptionPlanSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get_queryset(self):
         return SubscriptionPlan.objects.filter(is_active=True).order_by("price")
 
@@ -68,14 +68,14 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         subscription = self.get_queryset().order_by("-is_active", "-created_at").first()
         if not subscription:
             return api_response(data=None)
-            
+
         SubscriptionService.sync_subscription_flags(subscription)
         serializer = self.get_serializer(subscription)
         return api_response(data=serializer.data)
 
 
 class PaymentViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_permissions(self):
         if self.action == "webhook":
@@ -91,7 +91,7 @@ class PaymentViewSet(viewsets.ViewSet):
         subscription_id = request.data.get("subscription_id")
         if not subscription_id:
             return api_response(error="subscription_id is required", status_code=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             subscription = Subscription.objects.get(id=subscription_id, user=request.user)
         except Subscription.DoesNotExist:
@@ -99,7 +99,7 @@ class PaymentViewSet(viewsets.ViewSet):
 
         # Mock logic for generating payment link
         payment_url = f"https://mock-provider.com/pay/{subscription.id}?amount={subscription.plan.price}&currency={subscription.plan.currency}"
-        
+
         return api_response(data={"payment_url": payment_url})
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=ApiResponseSerializer)
@@ -108,10 +108,11 @@ class PaymentViewSet(viewsets.ViewSet):
         """
         Webhook from payment provider.
         """
+        print(request.data)
         try:
             payment = SubscriptionService.process_webhook_payment(request.data)
             return api_response(
-                data={"status": "success", "payment_id": payment.id if payment else None}, 
+                data={"status": "success", "payment_id": payment.id if payment else None},
                 status_code=status.HTTP_200_OK
             )
         except ValueError as e:
