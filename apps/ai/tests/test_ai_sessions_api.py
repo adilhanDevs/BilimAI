@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import override_settings
 
-from apps.subscription.models import Subscription
+from apps.subscription.models import Subscription, SubscriptionPlan
 from apps.subscription.services.subscription_service import SubscriptionService
 from apps.users.models import User
 
@@ -16,7 +16,9 @@ class AiSessionsAPITests(APITestCase):
             email="aiuser@example.com",
             password="Str0ngP@ssw0rd",
         )
-        SubscriptionService.create_subscription(self.user, Subscription.PlanType.MONTHLY)
+        plan = SubscriptionPlan.objects.create(name="Monthly", code="monthly", duration_days=30, price=1000)
+        sub = SubscriptionService.create_subscription(self.user, plan)
+        sub.activate()
         token_res = self.client.post(
             reverse("auth-login"),
             {"nickname": "aiuser", "password": "Str0ngP@ssw0rd"},
