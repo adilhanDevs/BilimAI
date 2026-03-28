@@ -18,6 +18,13 @@ class SubscriptionService:
         )
 
     @staticmethod
+    def user_has_active_subscription(user) -> bool:
+        """Check if a User has an active subscription."""
+        if not user or not user.is_authenticated:
+            return False
+        return user.subscriptions.filter(is_active=True).exists()
+
+    @staticmethod
     def process_webhook_payment(data: dict) -> SubscriptionPayment | None:
         """
         Process incoming webhook from payment provider.
