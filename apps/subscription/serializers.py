@@ -1,13 +1,11 @@
 from rest_framework import serializers
 
 from apps.subscription.models import Subscription, SubscriptionPlan, SubscriptionPayment
-from apps.subscription.services.subscription_service import SubscriptionService
-
 
 class SubscriptionPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriptionPlan
-        fields = ("id", "name", "code", "duration_days","description" ,"price", "currency", "features")
+        fields = ("id", "name", "code", "duration_days","description" ,"price", "currency", "features", "link")
         read_only_fields = fields
 
 
@@ -31,10 +29,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             "starts_at", "ends_at", "last_payment_date", "is_active", "created_at"
         )
 
-    def create(self, validated_data):
-        user = self.context["request"].user
-        plan = validated_data["plan"]
-        return SubscriptionService.create_subscription(user=user, plan=plan)
+
 
 
 class SubscriptionPaymentSerializer(serializers.ModelSerializer):

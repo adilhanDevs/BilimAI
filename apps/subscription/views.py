@@ -11,6 +11,7 @@ from .services.subscription_service import SubscriptionService
 
 logger = logging.getLogger(__name__)
 
+
 class SubscriptionPlanViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SubscriptionPlanSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -54,13 +55,6 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return api_response(data=serializer.data)
 
-    @extend_schema(request=SubscriptionSerializer, responses={201: ApiResponseSerializer})
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return api_response(data=serializer.data, status_code=status.HTTP_201_CREATED)
-
     @extend_schema(responses=ApiResponseSerializer)
     @action(detail=False, methods=["get"])
     def me(self, request):
@@ -73,19 +67,48 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(subscription)
         return api_response(data=serializer.data)
 
-
-class PaymentViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.AllowAny]
-
-    def get_permissions(self):
-        if self.action == "webhook":
-            return [permissions.AllowAny()]
-        return super().get_permissions()
-
     @extend_schema(
         request=OpenApiTypes.OBJECT,
-        responses=ApiResponseSerializer
+        responses=ApiResponseSerializer,
+        description=(
+            "Receive a confirmed payment result from the frontend webhook and "
+            "create Subscription + SubscriptionPayment atomically.\n\n"
+            "**Payload fields:**\n"
+            "- `plan_id` (int): ID of the SubscriptionPlan\n"
+            "- `provider_payment_id` (str): Unique payment ID from the provider\n"
+            "- `amount` (str): Amount paid — must match plan price\n"
+            "- `currency` (str): Currency code, e.g. `KGS`\n"
+            "- `succeeded` (bool): Whether the payment succeeded\n"
+            "- `provider` (str, optional): Payment provider name"
+        ),
     )
+    @action(detail=False, methods=["post"], url_path="process-payment")
+    def process_payment(self, request):
+        """Process payment confirmed by frontend webhook. Authenticated endpoint."""
+        try:
+            payment = SubscriptionService.process_frontend_payment(request.user, request.data)
+            return api_response(
+                data={
+                    "status": "success",
+                    "payment_id": payment.id if payment else None,
+                    "succeeded": payment.succeeded if payment else False,
+                },
+                status_code=status.HTTP_201_CREATED,
+            )
+        except ValueError as e:
+            return api_response(error=str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            logger.exception("process_payment failed")
+            return api_response(
+                error="Internal server error",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class PaymentViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(request=OpenApiTypes.OBJECT, responses=ApiResponseSerializer)
     @action(detail=False, methods=["post"], url_path="create-link")
     def create_link(self, request):
         subscription_id = request.data.get("subscription_id")
@@ -97,26 +120,5 @@ class PaymentViewSet(viewsets.ViewSet):
         except Subscription.DoesNotExist:
             return api_response(error="Subscription not found", status_code=status.HTTP_404_NOT_FOUND)
 
-        # Mock logic for generating payment link
         payment_url = f"https://mock-provider.com/pay/{subscription.id}?amount={subscription.plan.price}&currency={subscription.plan.currency}"
-
         return api_response(data={"payment_url": payment_url})
-
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=ApiResponseSerializer)
-    @action(detail=False, methods=["post"])
-    def webhook(self, request):
-        """
-        Webhook from payment provider.
-        """
-        print(request.data)
-        try:
-            payment = SubscriptionService.process_webhook_payment(request.data)
-            return api_response(
-                data={"status": "success", "payment_id": payment.id if payment else None},
-                status_code=status.HTTP_200_OK
-            )
-        except ValueError as e:
-            return api_response(error=str(e), status_code=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.exception("Webhook processing failed")
-            return api_response(error="Internal server error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
