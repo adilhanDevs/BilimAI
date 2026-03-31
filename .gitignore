@@ -15,6 +15,7 @@ myenv/
 db.sqlite3
 staticfiles/
 media/
+docker-compose.yml
 
 # Environment files
 .env
