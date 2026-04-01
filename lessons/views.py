@@ -8,9 +8,30 @@ from .models.engine import LessonStep
 from .models.progress import LessonSession, ReviewItem, CourseEnrollment
 from .serializers import (
     LessonStepSerializer, AttemptRequestSerializer, AttemptResponseSerializer,
-    ReviewItemSerializer, CourseSummarySerializer, SessionStatusSerializer
+    ReviewItemSerializer, CourseSummarySerializer, SessionStatusSerializer,
+    CourseSerializer
 )
 from .services import AttemptSubmissionService, CourseEnrollmentService
+
+
+class CourseViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for listing available courses and enrolling.
+    """
+    queryset = Course.objects.filter(is_published=True)
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['post'])
+    def enroll(self, request, pk=None):
+        course = self.get_object()
+        CourseEnrollmentService.ensure_enrollment(request.user, course)
+        
+        # Also update current course for user
+        request.user.current_course = course
+        request.user.save()
+        
+        return Response({"status": "enrolled", "course_id": course.id})
 
 
 class LessonStepViewSet(viewsets.ReadOnlyModelViewSet):

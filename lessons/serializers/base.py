@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from ..models.engine import Asset, ContentUnit
+from ..models.course import Course
 from ..utils import get_translation
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['id', 'slug', 'title', 'source_language', 'target_language', 'description_ky', 'cefr_min', 'cefr_max']
 
 
 class AssetSerializer(serializers.ModelSerializer):

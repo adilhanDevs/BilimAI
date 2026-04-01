@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework_nested import routers
-from .views import LessonStepViewSet, AttemptViewSet, ReviewQueueViewSet, UserProgressViewSet
+from .views import LessonStepViewSet, AttemptViewSet, ReviewQueueViewSet, UserProgressViewSet, CourseViewSet
 from .api.speaking_views import SpeakingSubmissionViewSet
 
 # We use nested routers for /lessons/<lesson_id>/steps/
 router = routers.SimpleRouter()
+router.register(r'courses', CourseViewSet, basename='courses')
 router.register(r'attempts', AttemptViewSet, basename='attempts')
 router.register(r'speaking/submissions', SpeakingSubmissionViewSet, basename='speaking-submissions')
 router.register(r'reviews', ReviewQueueViewSet, basename='review-queue')
