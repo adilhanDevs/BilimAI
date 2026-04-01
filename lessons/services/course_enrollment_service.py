@@ -20,10 +20,13 @@ class CourseEnrollmentService:
     @staticmethod
     def ensure_enrollment(user, course: Course):
         """
-        Creates an enrollment if it doesn't exist.
+        Creates an enrollment if it doesn't exist, or ensures it is active.
         """
-        CourseEnrollment.objects.get_or_create(
+        enrollment, created = CourseEnrollment.objects.get_or_create(
             user=user, 
             course=course,
             defaults={'is_active': True}
         )
+        if not created and not enrollment.is_active:
+            enrollment.is_active = True
+            enrollment.save()
