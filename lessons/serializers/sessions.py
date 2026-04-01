@@ -7,10 +7,27 @@ from ..models.engine import LessonStep
 from ..utils import get_translation
 
 
+class LessonSummarySerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title', 'slug', 'sort_order', 'xp_reward', 'status']
+
+    def get_status(self, obj):
+        user = self.context.get('request').user
+        if not user or not user.is_authenticated:
+            return 'not_started'
+        progress = obj.user_progress.filter(user=user).first()
+        return progress.status if progress else 'not_started'
+
+
 class LessonProgressSerializer(serializers.ModelSerializer):
+    last_session = SessionStatusSerializer(read_only=True)
+
     class Meta:
         model = UserLessonProgress
-        fields = ['status', 'best_score', 'total_xp_earned', 'total_sessions', 'completed_at', 'last_activity_at']
+        fields = ['status', 'best_score', 'total_xp_earned', 'total_sessions', 'completed_at', 'last_activity_at', 'last_session']
 
 
 class SessionStatusSerializer(serializers.ModelSerializer):
@@ -94,10 +111,16 @@ class SkillProgressSerializer(serializers.ModelSerializer):
 
 class UserCategoryProgressSerializer(serializers.ModelSerializer):
     category_title = serializers.CharField(source='category.title_ky', read_only=True)
+    lessons = serializers.SerializerMethodField()
     
     class Meta:
         model = UserCategoryProgress
-        fields = ['category_id', 'category_title', 'status', 'progress_percent', 'completed_lessons', 'total_lessons']
+        fields = ['category_id', 'category_title', 'status', 'progress_percent', 'completed_lessons', 'total_lessons', 'lessons']
+
+    def get_lessons(self, obj):
+        # We need the lessons belonging to this category
+        lessons = obj.category.lessons.filter(is_published=True).order_by('sort_order')
+        return LessonSummarySerializer(lessons, many=True, context=self.context).data
 
 
 class CourseSummarySerializer(serializers.ModelSerializer):

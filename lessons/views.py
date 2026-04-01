@@ -61,6 +61,49 @@ class LessonStepViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = LessonProgressSerializer(progress)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['post'], url_path='start')
+    def start(self, request, lesson_pk=None):
+        from .models.progress import LessonSession, UserLessonProgress
+        from .serializers import SessionStatusSerializer
+        from django.db.models import Count
+        
+        # Verify enrollment
+        try:
+            lesson = Lesson.objects.select_related('category__course').get(id=lesson_pk)
+            if not CourseEnrollmentService.is_enrolled(request.user, lesson.category.course):
+                return Response({"detail": "User is not enrolled in this course."}, status=status.HTTP_403_FORBIDDEN)
+        except Lesson.DoesNotExist:
+            return Response({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check for active session
+        session = LessonSession.objects.filter(
+            user=request.user, 
+            lesson_id=lesson_pk, 
+            status='active'
+        ).annotate(total_steps_count=Count('lesson__steps')).first()
+        
+        if not session:
+            session = LessonSession.objects.create(
+                user=request.user,
+                lesson_id=lesson_pk,
+                status='active'
+            )
+            # Re-fetch with annotation
+            session = LessonSession.objects.annotate(
+                total_steps_count=Count('lesson__steps')
+            ).get(id=session.id)
+            
+            # Ensure UserLessonProgress exists and update last_session
+            progress, _ = UserLessonProgress.objects.get_or_create(user=request.user, lesson_id=lesson_pk)
+            progress.last_session = session
+            progress.total_sessions += 1
+            if progress.status == 'not_started':
+                progress.status = 'in_progress'
+            progress.save()
+
+        serializer = SessionStatusSerializer(session)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class ReviewQueueViewSet(viewsets.ReadOnlyModelViewSet):
     """

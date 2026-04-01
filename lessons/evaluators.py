@@ -46,23 +46,38 @@ class MultipleChoiceEvaluator(BaseStepEvaluator):
 
 class FillBlankEvaluator(BaseStepEvaluator):
     def evaluate(self, client_payload: Dict[str, Any]) -> EvaluationResult:
-        user_answer = client_payload.get('text', '').strip().lower()
-        if not user_answer:
-            return EvaluationResult(is_correct=False, score=0, feedback={"error": "Text is empty"})
+        user_answers = client_payload.get('answers', [])
+        if not isinstance(user_answers, list) or not user_answers:
+            return EvaluationResult(is_correct=False, score=0, feedback={"error": "Answers must be a non-empty list"})
 
-        acceptable_answers = [ans.strip().lower() for ans in self.step_detail.acceptable_answers]
+        target_answers = self.step_detail.acceptable_answers
+        if len(user_answers) != len(target_answers):
+            return EvaluationResult(is_correct=False, score=0, feedback={"error": "Incomplete answers"})
 
-        if user_answer in acceptable_answers:
-            return EvaluationResult(is_correct=True, score=100)
-        
+        correct_count = 0
+        for i, user_ans in enumerate(user_answers):
+            target = target_answers[i]
+            user_ans_clean = str(user_ans).strip().lower()
+
+            if isinstance(target, list):
+                if user_ans_clean in [str(t).strip().lower() for t in target]:
+                    correct_count += 1
+            else:
+                if user_ans_clean == str(target).strip().lower():
+                    correct_count += 1
+
+        is_correct = correct_count == len(target_answers)
+        score = 100 if is_correct else int((correct_count / len(target_answers)) * 100)
+
         return EvaluationResult(
-            is_correct=False, 
-            score=0, 
-            feedback={"acceptable_answers": self.step_detail.acceptable_answers}
+            is_correct=is_correct, 
+            score=score, 
+            feedback={"acceptable_answers": target_answers} if not is_correct else {}
         )
 
 
 class MatchPairsEvaluator(BaseStepEvaluator):
+
     def evaluate(self, client_payload: Dict[str, Any]) -> EvaluationResult:
         submitted_pairs = client_payload.get('pairs', [])  # list of {left_id, right_id}
         if not submitted_pairs:
@@ -120,12 +135,16 @@ class TypeTranslationEvaluator(BaseStepEvaluator):
         if not user_text:
             return EvaluationResult(is_correct=False, score=0, feedback={"error": "Text is empty"})
 
-        acceptable = [a.strip().lower() for a in self.step_detail.acceptable_answers]
+        acceptable = [str(a).strip().lower() for a in self.step_detail.acceptable_answers]
 
-        if user_text in acceptable:
-            return EvaluationResult(is_correct=True, score=100)
+        is_correct = user_text in acceptable
+        score = 100 if is_correct else 0
         
-        return EvaluationResult(is_correct=False, score=0, feedback={"acceptable_answers": self.step_detail.acceptable_answers})
+        return EvaluationResult(
+            is_correct=is_correct, 
+            score=score, 
+            feedback={"acceptable_answers": self.step_detail.acceptable_answers} if not is_correct else {}
+        )
 
 
 class SpeakPhraseEvaluator(BaseStepEvaluator):
