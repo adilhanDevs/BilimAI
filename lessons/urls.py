@@ -22,5 +22,6 @@ steps_router.register(r'steps', LessonStepViewSet, basename='lesson-steps')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('', include(lessons_router.urls)),
     path('', include(steps_router.urls)),
 ]

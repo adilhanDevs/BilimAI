@@ -72,32 +72,32 @@ class LessonStepViewSet(viewsets.ReadOnlyModelViewSet):
         context['lang'] = self.request.query_params.get('lang', 'en')
         return context
 
-    @action(detail=False, methods=['get'], url_path='progress')
-    def progress(self, request, lesson_pk=None):
+    @action(detail=True, methods=['get'], url_path='progress')
+    def progress(self, request, pk=None):
         from .models.progress import UserLessonProgress
         from .serializers import LessonProgressSerializer
         
         # Verify enrollment
         try:
-            lesson = Lesson.objects.select_related('category__course').get(id=lesson_pk)
+            lesson = Lesson.objects.select_related('category__course').get(id=pk)
             if not CourseEnrollmentService.is_enrolled(request.user, lesson.category.course):
                 return Response({"detail": "User is not enrolled in this course."}, status=status.HTTP_403_FORBIDDEN)
         except Lesson.DoesNotExist:
             return Response({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        progress, _ = UserLessonProgress.objects.get_or_create(user=request.user, lesson_id=lesson_pk)
+        progress, _ = UserLessonProgress.objects.get_or_create(user=request.user, lesson_id=pk)
         serializer = LessonProgressSerializer(progress)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'], url_path='start')
-    def start(self, request, lesson_pk=None):
+    @action(detail=True, methods=['post'], url_path='start')
+    def start(self, request, pk=None):
         from .models.progress import LessonSession, UserLessonProgress
         from .serializers import SessionStatusSerializer
         from django.db.models import Count
         
         # Verify enrollment
         try:
-            lesson = Lesson.objects.select_related('category__course').get(id=lesson_pk)
+            lesson = Lesson.objects.select_related('category__course').get(id=pk)
             if not CourseEnrollmentService.is_enrolled(request.user, lesson.category.course):
                 return Response({"detail": "User is not enrolled in this course."}, status=status.HTTP_403_FORBIDDEN)
         except Lesson.DoesNotExist:
@@ -106,14 +106,14 @@ class LessonStepViewSet(viewsets.ReadOnlyModelViewSet):
         # Check for active session
         session = LessonSession.objects.filter(
             user=request.user, 
-            lesson_id=lesson_pk, 
+            lesson_id=pk, 
             status='active'
         ).annotate(total_steps_count=Count('lesson__steps')).first()
         
         if not session:
             session = LessonSession.objects.create(
                 user=request.user,
-                lesson_id=lesson_pk,
+                lesson_id=pk,
                 status='active'
             )
             # Re-fetch with annotation
@@ -122,7 +122,7 @@ class LessonStepViewSet(viewsets.ReadOnlyModelViewSet):
             ).get(id=session.id)
             
             # Ensure UserLessonProgress exists and update last_session
-            progress, _ = UserLessonProgress.objects.get_or_create(user=request.user, lesson_id=lesson_pk)
+            progress, _ = UserLessonProgress.objects.get_or_create(user=request.user, lesson_id=pk)
             progress.last_session = session
             progress.total_sessions += 1
             if progress.status == 'not_started':
