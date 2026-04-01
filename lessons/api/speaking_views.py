@@ -40,9 +40,13 @@ class SpeakingSubmissionViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMix
                 audio_file=serializer.validated_data['audio_file']
             )
             
-            # For this MVP/Step 5 implementation, let's manually trigger a "mock" async process
-            # In production, this would be a real Celery task triggered within create_submission
-            # SpeakingEvaluationService.process_evaluation(submission.id)
+            # Since we are in an environment without Celery, run evaluation synchronously
+            # In production this would be: SpeakingEvaluationService.delay_processing(submission.id)
+            try:
+                SpeakingEvaluationService.process_evaluation(submission.id)
+            except Exception as e:
+                logger.error(f"Sync evaluation failed for {submission.id}: {str(e)}")
+                # Even if evaluation fails here, the user can still poll the status
             
             return Response(
                 SpeechSubmissionResponseSerializer(submission).data, 
