@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import ValidationError
-from .models.course import Lesson
+from .models.course import Lesson, Course
 from .models.engine import LessonStep
 from .models.progress import LessonSession, ReviewItem, CourseEnrollment
 from .serializers import (
