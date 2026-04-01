@@ -4,7 +4,7 @@ from django.db import transaction
 from django.utils.text import slugify
 from lessons.models.localization import Language, TranslationGroup, Translation
 from lessons.models.course import Course, Category, Lesson, LessonVocabulary
-from lessons.models.engine import ContentUnit, StepChoice, MatchPairItem, ReorderToken, Asset
+from lessons.models.engine import ContentUnit, StepChoice, MatchPairItem, ReorderToken, Asset, LessonStep
 from lessons.services.authoring_service import ContentAuthoringService
 
 
@@ -17,6 +17,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Delete existing demo data before seeding',
         )
+        parser.add_argument(
+            '--with-user',
+            action='store_true',
+            help='Create a demo user and enroll them',
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -24,6 +29,10 @@ class Command(BaseCommand):
             self.stdout.write("Resetting demo data...")
             Course.objects.filter(slug='english-for-kyrgyz').delete()
             Language.objects.filter(code__in=['en', 'ky', 'ru']).delete()
+            if options['with_user']:
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                User.objects.filter(nickname='demo_student').delete()
 
         self.stdout.write("Seeding languages...")
         en, _ = Language.objects.get_or_create(code='en', defaults={'name': 'English'})
@@ -101,8 +110,8 @@ class Command(BaseCommand):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson_hello,
             step_type='multiple_choice',
-            prompt_text='How do you say "Салам" in English?',
-            instruction_text='Choose the correct option.',
+            prompt='How do you say "Салам" in English?',
+            instruction='Choose the correct option.',
             prompt_group=create_tg({'ky': '"Салам" англисче кандай болот?', 'en': 'How do you say "Hello" in English?'}),
             sort_order=1,
             detail_data={}
@@ -116,8 +125,8 @@ class Command(BaseCommand):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson_hello,
             step_type='fill_blank',
-            prompt_text='Complete the sentence',
-            instruction_text='Type the missing word.',
+            prompt='Complete the sentence',
+            instruction='Type the missing word.',
             sort_order=2,
             detail_data={
                 'sentence_template': '[[blank]], my name is John.',
@@ -129,7 +138,7 @@ class Command(BaseCommand):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson_hello,
             step_type='match_pairs',
-            prompt_text='Match English words with Kyrgyz translations',
+            prompt='Match English words with Kyrgyz translations',
             sort_order=3,
             detail_data={}
         )
@@ -163,8 +172,8 @@ class Command(BaseCommand):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson_basic_food,
             step_type='reorder_sentence',
-            prompt_text='Translate: "Мен суу ичем"',
-            instruction_text='Put the words in the correct order.',
+            prompt='Translate: "Мен суу ичем"',
+            instruction='Put the words in the correct order.',
             sort_order=1,
             detail_data={}
         )
@@ -178,7 +187,7 @@ class Command(BaseCommand):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson_basic_food,
             step_type='type_translation',
-            prompt_text='Translate into English',
+            prompt='Translate into English',
             sort_order=2,
             detail_data={
                 'source_text': 'Нан',
@@ -190,7 +199,7 @@ class Command(BaseCommand):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson_basic_food,
             step_type='speak_phrase',
-            prompt_text='Say this phrase clearly',
+            prompt='Say this phrase clearly',
             sort_order=3,
             detail_data={
                 'target_text': 'I drink water',
@@ -202,3 +211,28 @@ class Command(BaseCommand):
         self.stdout.write(f"Created {Category.objects.filter(course=course).count()} categories")
         self.stdout.write(f"Created {Lesson.objects.filter(category__course=course).count()} lessons")
         self.stdout.write(f"Created {LessonStep.objects.filter(lesson__category__course=course).count()} steps")
+
+        if options['with_user']:
+            self.stdout.write("Creating and enrolling demo user...")
+            from django.contrib.auth import get_user_model
+            from lessons.services.course_enrollment_service import CourseEnrollmentService
+            from lessons.services.category_progress_service import CategoryProgressService
+            
+            User = get_user_model()
+            user, created = User.objects.get_or_create(
+                nickname='demo_student',
+                defaults={
+                    'email': 'demo@example.com',
+                    'is_active': True,
+                }
+            )
+            if created:
+                user.set_password('demo1234')
+                user.save()
+            
+            CourseEnrollmentService.ensure_enrollment(user, course)
+            
+            for category in Category.objects.filter(course=course):
+                CategoryProgressService.update_category_progress(user, category)
+            
+            self.stdout.write(self.style.SUCCESS(f"Demo user 'demo_student' created and enrolled!"))

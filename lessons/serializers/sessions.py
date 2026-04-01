@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from ..models.progress import (
-    LessonSession, StepAttempt, SpeechSubmission, UserLessonProgress,
+    LessonSession, StepAttempt, SpeechSubmission, UserLessonProgress,Lesson,
     ReviewItem, UserCategoryProgress, UserSkillProgress, CourseEnrollment
 )
 from ..models.engine import LessonStep
@@ -20,14 +20,6 @@ class LessonSummarySerializer(serializers.ModelSerializer):
             return 'not_started'
         progress = obj.user_progress.filter(user=user).first()
         return progress.status if progress else 'not_started'
-
-
-class LessonProgressSerializer(serializers.ModelSerializer):
-    last_session = SessionStatusSerializer(read_only=True)
-
-    class Meta:
-        model = UserLessonProgress
-        fields = ['status', 'best_score', 'total_xp_earned', 'total_sessions', 'completed_at', 'last_activity_at', 'last_session']
 
 
 class SessionStatusSerializer(serializers.ModelSerializer):
@@ -51,6 +43,14 @@ class SessionStatusSerializer(serializers.ModelSerializer):
         if total == 0:
             return 0
         return int((obj.completed_steps_count / total) * 100)
+
+
+class LessonProgressSerializer(serializers.ModelSerializer):
+    last_session = SessionStatusSerializer(read_only=True)
+
+    class Meta:
+        model = UserLessonProgress
+        fields = ['status', 'best_score', 'total_xp_earned', 'total_sessions', 'completed_at', 'last_activity_at', 'last_session']
 
 
 class SpeechSubmissionRequestSerializer(serializers.Serializer):
