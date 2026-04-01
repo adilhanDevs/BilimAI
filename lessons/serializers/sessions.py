@@ -136,7 +136,7 @@ class CourseSummarySerializer(serializers.ModelSerializer):
     def get_categories(self, obj):
         from ..models.progress import UserCategoryProgress
         qs = UserCategoryProgress.objects.filter(user=obj.user, category__course=obj.course).select_related('category')
-        return UserCategoryProgressSerializer(qs, many=True).data
+        return UserCategoryProgressSerializer(qs, many=True, context=self.context).data
 
     def get_skills(self, obj):
         from ..models.progress import UserSkillProgress
