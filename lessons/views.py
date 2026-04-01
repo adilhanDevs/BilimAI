@@ -27,6 +27,13 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
         course = self.get_object()
         CourseEnrollmentService.ensure_enrollment(request.user, course)
         
+        # Initialize progress for all categories in the course
+        from .services.category_progress_service import CategoryProgressService
+        from .models.course import Category
+        categories = Category.objects.filter(course=course)
+        for category in categories:
+            CategoryProgressService.update_category_progress(request.user, category)
+        
         # Also update current course for user
         request.user.current_course = course
         request.user.save()
