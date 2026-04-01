@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
+    container_name: aitil-db
     environment:
       POSTGRES_DB: bilimai
       POSTGRES_USER: bilimai
@@ -9,17 +10,27 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bilimai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
+    container_name: aitil-redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   web:
     build: .
-    command: >
-      sh -c "python manage.py migrate --noinput &&
-             gunicorn BilimAI.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    container_name: aitil-web
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
     environment:
       DJANGO_SECRET_KEY: docker-compose-dev-change-me
       USE_POSTGRES: "true"
@@ -30,16 +41,55 @@ services:
       POSTGRES_PORT: "5432"
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/1
-      ALLOWED_HOSTS: localhost,127.0.0.1,web,0.0.0.0
-      DEBUG: "false"
+      ALLOWED_HOSTS: "*"
+      DEBUG: "true"
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: Dockerfile
+        - action: rebuild
+          path: requirements.txt
+        - action: sync
+          path: apps
+          target: /app/apps
+          ignore:
+            - __pycache__
+            - "*.pyc"
+            - ".pytest_cache"
+        - action: sync
+          path: BilimAI
+          target: /app/BilimAI
+          ignore:
+            - __pycache__
+            - "*.pyc"
+        - action: sync
+          path: common
+          target: /app/common
+          ignore:
+            - __pycache__
+            - "*.pyc"
+        - action: sync
+          path: lessons
+          target: /app/lessons
+          ignore:
+            - __pycache__
+            - "*.pyc"
+        - action: sync
+          path: manage.py
+          target: /app/manage.py
 
   celery:
     build: .
+    container_name: aitil-celery
     command: celery -A BilimAI worker -l info
     environment:
       DJANGO_SECRET_KEY: docker-compose-dev-change-me
@@ -51,9 +101,31 @@ services:
       POSTGRES_PORT: "5432"
       CELERY_BROKER_URL: redis://redis:6379/1
       REDIS_URL: redis://redis:6379/0
+    volumes:
+      - .:/app
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: Dockerfile
+        - action: rebuild
+          path: requirements.txt
+        - action: sync
+          path: apps
+          target: /app/apps
+          ignore:
+            - __pycache__
+            - "*.pyc"
+        - action: sync
+          path: BilimAI
+          target: /app/BilimAI
+          ignore:
+            - __pycache__
+            - "*.pyc"
 
 volumes:
   pgdata:

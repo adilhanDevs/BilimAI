@@ -51,6 +51,10 @@ class GamificationService:
             pass
         else:
             user.streak = 1
+        
+        if user.streak > user.longest_streak:
+            user.longest_streak = user.streak
+        
         user.last_streak_date = today
 
     @classmethod
@@ -95,6 +99,7 @@ class GamificationService:
                     "points",
                     "level",
                     "streak",
+                    "longest_streak",
                     "last_streak_date",
                     "monthly_reward_unlocked",
                 ],
@@ -116,6 +121,7 @@ class GamificationService:
             "points": user.points,
             "level": user.level,
             "streak": user.streak,
+            "longest_streak": user.longest_streak,
             "last_streak_date": user.last_streak_date,
             "monthly_reward_unlocked": user.monthly_reward_unlocked,
             "monthly_points_this_month": monthly_points,

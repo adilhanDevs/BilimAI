@@ -1,6 +1,7 @@
 from decimal import Decimal
 import logging
 from django.utils import timezone
+from django.db import transaction
 from apps.subscription.models import Subscription, SubscriptionPayment, SubscriptionPlan
 
 logger = logging.getLogger(__name__)
@@ -12,6 +13,17 @@ class SubscriptionService:
         if not user or not user.is_authenticated:
             return False
         return user.subscriptions.filter(is_active=True).exists()
+
+    @staticmethod
+    def create_subscription(user, plan: SubscriptionPlan) -> Subscription:
+        """Creates a pending subscription for a user."""
+        return Subscription.objects.create(
+            user=user,
+            plan=plan,
+            status=Subscription.Status.PENDING,
+            is_active=False,
+            starts_at=timezone.now()
+        )
 
     @staticmethod
     def process_frontend_payment(user, data: dict) -> SubscriptionPayment | None:
@@ -53,7 +65,6 @@ class SubscriptionService:
             logger.warning("Payment amount %s does not match plan price %s", amount, plan.price)
             succeeded = False
 
-        from django.db import transaction
         with transaction.atomic():
             subscription = Subscription.objects.create(
                 user=user,
@@ -77,6 +88,56 @@ class SubscriptionService:
 
         return payment
 
+    @staticmethod
+    def process_webhook_payment(payload: dict) -> SubscriptionPayment:
+        """
+        Process a payment webhook from an external provider.
+        Idempotent and concurrent-safe.
+        """
+        sub_id = payload.get("subscription_id")
+        provider_payment_id = payload.get("provider_payment_id")
+        amount_str = payload.get("amount")
+        currency = payload.get("currency", "KGS")
+        succeeded = payload.get("succeeded", False)
+        provider = payload.get("provider", "unknown")
+
+        if not sub_id or not provider_payment_id or amount_str is None:
+            raise ValueError("Invalid payload: missing fields")
+
+        amount = Decimal(str(amount_str))
+
+        # Idempotency check
+        existing_payment = SubscriptionPayment.objects.filter(
+            provider_payment_id=provider_payment_id
+        ).first()
+        if existing_payment:
+            return existing_payment
+
+        with transaction.atomic():
+            try:
+                # Use select_for_update for concurrency safety
+                subscription = Subscription.objects.select_for_update().get(id=sub_id)
+            except Subscription.DoesNotExist:
+                raise ValueError("Subscription not found")
+
+            # Validate amount against plan
+            if amount != subscription.plan.price:
+                logger.warning("Webhook amount mismatch for sub %s", sub_id)
+                succeeded = False
+
+            payment = SubscriptionPayment.objects.create(
+                subscription=subscription,
+                user=subscription.user,
+                plan=subscription.plan,
+                amount=amount,
+                currency=currency,
+                provider=provider,
+                provider_payment_id=provider_payment_id,
+                succeeded=succeeded,
+            )
+            # Subscription is updated in SubscriptionPayment.save()
+
+        return payment
 
     @staticmethod
     def sync_subscription_flags(subscription: Subscription) -> Subscription:

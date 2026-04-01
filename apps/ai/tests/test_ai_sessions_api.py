@@ -17,8 +17,12 @@ class AiSessionsAPITests(APITestCase):
             password="Str0ngP@ssw0rd",
         )
         plan = SubscriptionPlan.objects.create(name="Monthly", code="monthly", duration_days=30, price=1000)
-        sub = SubscriptionService.create_subscription(self.user, plan)
-        sub.activate()
+        sub = Subscription.objects.create(
+            user=self.user,
+            plan=plan,
+            status=Subscription.Status.ACTIVE,
+            is_active=True,
+        )
         token_res = self.client.post(
             reverse("auth-login"),
             {"nickname": "aiuser", "password": "Str0ngP@ssw0rd"},

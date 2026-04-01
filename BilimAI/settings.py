@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "apps.subscription.apps.SubscriptionConfig",
     "apps.gamification.apps.GamificationConfig",
     "apps.ai.apps.AiConfig",
+    "lessons.apps.LessonsConfig",
 ]
 
 MIDDLEWARE = [
@@ -102,8 +103,22 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-if HAS_WHITENOISE:
+
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://adilhan.pythonanywhere.com",
+]
+
+# WhiteNoise only in production (or when DEBUG=False)
+if HAS_WHITENOISE and not DEBUG:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+else:
+    # В разработке используем стандартный storage Django
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+    # Опционально: можно добавить папку static, если у тебя есть свои статические файлы
+    # STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -120,6 +135,7 @@ CACHES = {
 # Celery defaults to in-memory transport/backend unless explicitly overridden.
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "memory://")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "cache+memory://")
+CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "true").lower() in ("1", "true", "yes")
 CELERY_TASK_TIME_LIMIT = 300
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"

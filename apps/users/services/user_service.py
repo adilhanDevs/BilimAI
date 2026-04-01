@@ -17,6 +17,8 @@ class UserService:
         password: str,
         first_name: str = "",
         last_name: str = "",
+        native_language: str = "ky",
+        target_language: str = "tr",
     ) -> User:
         if not nickname or not email or not password:
             raise ValueError("Nickname, email, and password are required.")
@@ -26,6 +28,8 @@ class UserService:
             password=password,
             first_name=first_name or "",
             last_name=last_name or "",
+            native_language=native_language or "ky",
+            target_language=target_language or "tr",
         )
 
     @staticmethod

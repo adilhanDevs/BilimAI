@@ -18,9 +18,29 @@ class UserSerializer(serializers.ModelSerializer):
             "points",
             "level",
             "streak",
+            "longest_streak",
             "monthly_reward_unlocked",
+            "native_language",
+            "target_language",
+            "onboarding_completed",
+            "current_course",
+            "daily_goal_xp",
+            "total_lessons_completed",
+            "current_timezone",
         )
-        read_only_fields = fields
+        read_only_fields = (
+            "id",
+            "nickname",
+            "email",
+            "is_active",
+            "created_at",
+            "points",
+            "level",
+            "streak",
+            "longest_streak",
+            "monthly_reward_unlocked",
+            "total_lessons_completed",
+        )
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -29,7 +49,16 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("nickname", "email", "first_name", "last_name", "password", "password2")
+        fields = (
+            "nickname",
+            "email",
+            "first_name",
+            "last_name",
+            "password",
+            "password2",
+            "native_language",
+            "target_language",
+        )
 
     def validate(self, attrs):
         if attrs["password"] != attrs["password2"]:

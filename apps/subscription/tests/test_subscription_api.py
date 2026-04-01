@@ -28,6 +28,7 @@ class SubscriptionAPITests(APITestCase):
         response = self.client.post(url, {"plan_id": self.plan.id})
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # Assuming api_response wraps data in "data"
         sub_id = response.data["data"]["id"]
         sub = Subscription.objects.get(id=sub_id)
         

@@ -41,6 +41,8 @@ class RegisterView(APIView):
             password=serializer.validated_data["password"],
             first_name=serializer.validated_data.get("first_name") or "",
             last_name=serializer.validated_data.get("last_name") or "",
+            native_language=serializer.validated_data.get("native_language") or "ky",
+            target_language=serializer.validated_data.get("target_language") or "tr",
         )
         payload = UserSerializer(user).data
         return api_response(data=payload, status_code=status.HTTP_201_CREATED)
@@ -75,6 +77,13 @@ class MeView(APIView):
     @extend_schema(responses=ApiResponseSerializer)
     def get(self, request, *args, **kwargs):
         return api_response(data=UserSerializer(request.user).data)
+
+    @extend_schema(request=UserSerializer, responses=ApiResponseSerializer)
+    def patch(self, request, *args, **kwargs):
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return api_response(data=serializer.data)
 
 
 class BilimTokenRefreshView(TokenRefreshView):

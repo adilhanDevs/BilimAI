@@ -1,0 +1,295 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.achievements (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  title text NOT NULL,
+  description_ky text,
+  icon text,
+  xp_reward integer NOT NULL DEFAULT 0 CHECK (xp_reward >= 0),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT achievements_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.ai_chat_messages (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  session_id uuid NOT NULL,
+  role text NOT NULL CHECK (role = ANY (ARRAY['user'::text, 'assistant'::text, 'system'::text])),
+  message_text text NOT NULL,
+  translation_ky text,
+  correction_note text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT ai_chat_messages_pkey PRIMARY KEY (id),
+  CONSTRAINT ai_chat_messages_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.ai_chat_sessions(id)
+);
+CREATE TABLE public.ai_chat_sessions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  scenario_id uuid,
+  started_at timestamp with time zone NOT NULL DEFAULT now(),
+  ended_at timestamp with time zone,
+  total_messages integer NOT NULL DEFAULT 0 CHECK (total_messages >= 0),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT ai_chat_sessions_pkey PRIMARY KEY (id),
+  CONSTRAINT ai_chat_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT ai_chat_sessions_scenario_id_fkey FOREIGN KEY (scenario_id) REFERENCES public.ai_scenarios(id)
+);
+CREATE TABLE public.ai_scenarios (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  title text NOT NULL,
+  description_ky text,
+  difficulty text NOT NULL DEFAULT 'beginner'::text,
+  is_published boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT ai_scenarios_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.categories (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  title_ky text NOT NULL,
+  title_target text NOT NULL,
+  description_ky text,
+  icon text,
+  difficulty text NOT NULL DEFAULT 'beginner'::text,
+  sort_order integer NOT NULL DEFAULT 0,
+  estimated_minutes integer NOT NULL DEFAULT 0,
+  vocabulary_count integer NOT NULL DEFAULT 0,
+  is_premium boolean NOT NULL DEFAULT false,
+  prerequisite_category_id uuid,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  course_id uuid,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT categories_pkey PRIMARY KEY (id),
+  CONSTRAINT categories_prerequisite_category_id_fkey FOREIGN KEY (prerequisite_category_id) REFERENCES public.categories(id),
+  CONSTRAINT categories_course_id_fkey FOREIGN KEY (course_id) REFERENCES public.courses(id)
+);
+CREATE TABLE public.course_enrollments (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  course_id uuid NOT NULL,
+  is_active boolean NOT NULL DEFAULT true,
+  started_at timestamp with time zone NOT NULL DEFAULT now(),
+  completed_at timestamp with time zone,
+  CONSTRAINT course_enrollments_pkey PRIMARY KEY (id),
+  CONSTRAINT course_enrollments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT course_enrollments_course_id_fkey FOREIGN KEY (course_id) REFERENCES public.courses(id)
+);
+CREATE TABLE public.courses (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  source_language text NOT NULL,
+  target_language text NOT NULL,
+  title text NOT NULL,
+  description_ky text,
+  cefr_min text,
+  cefr_max text,
+  is_published boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT courses_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.leaderboard_entries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  season_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  xp integer NOT NULL DEFAULT 0 CHECK (xp >= 0),
+  rank integer,
+  CONSTRAINT leaderboard_entries_pkey PRIMARY KEY (id),
+  CONSTRAINT leaderboard_entries_season_id_fkey FOREIGN KEY (season_id) REFERENCES public.leaderboard_seasons(id),
+  CONSTRAINT leaderboard_entries_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.leaderboard_seasons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  starts_at timestamp with time zone NOT NULL,
+  ends_at timestamp with time zone NOT NULL,
+  is_active boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT leaderboard_seasons_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.lesson_steps (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  lesson_id uuid NOT NULL,
+  step_type text NOT NULL CHECK (step_type = ANY (ARRAY['vocab_intro'::text, 'multiple_choice_translation'::text, 'listen_and_choose'::text, 'fill_blank'::text, 'reorder_sentence'::text, 'speak_phrase'::text, 'dialogue_choice'::text, 'match_pairs'::text, 'type_translation'::text, 'lesson_summary'::text])),
+  prompt_ky text,
+  instruction_ky text,
+  content jsonb NOT NULL DEFAULT '{}'::jsonb,
+  correct_answer jsonb,
+  options jsonb,
+  hint_ky text,
+  explanation_ky text,
+  xp integer NOT NULL DEFAULT 1,
+  sort_order integer NOT NULL DEFAULT 0,
+  CONSTRAINT lesson_steps_pkey PRIMARY KEY (id),
+  CONSTRAINT lesson_steps_lesson_id_fkey FOREIGN KEY (lesson_id) REFERENCES public.lessons(id)
+);
+CREATE TABLE public.lesson_vocabulary (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  lesson_id uuid NOT NULL,
+  word_or_phrase_target text NOT NULL,
+  translation_ky text NOT NULL,
+  transliteration text,
+  part_of_speech text,
+  example_target text,
+  example_ky text,
+  audio_url text,
+  difficulty text DEFAULT 'beginner'::text,
+  sort_order integer NOT NULL DEFAULT 0,
+  CONSTRAINT lesson_vocabulary_pkey PRIMARY KEY (id),
+  CONSTRAINT lesson_vocabulary_lesson_id_fkey FOREIGN KEY (lesson_id) REFERENCES public.lessons(id)
+);
+CREATE TABLE public.lessons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  category_id uuid NOT NULL,
+  slug text NOT NULL UNIQUE,
+  title text NOT NULL,
+  subtitle text,
+  description_ky text,
+  level text NOT NULL DEFAULT 'a0'::text,
+  difficulty text NOT NULL DEFAULT 'beginner'::text,
+  duration_min integer NOT NULL DEFAULT 5,
+  xp_reward integer NOT NULL DEFAULT 10,
+  grammar_focus text,
+  is_premium boolean NOT NULL DEFAULT false,
+  is_published boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  unit_id uuid,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT lessons_pkey PRIMARY KEY (id),
+  CONSTRAINT lessons_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id),
+  CONSTRAINT lessons_unit_id_fkey FOREIGN KEY (unit_id) REFERENCES public.units(id)
+);
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  username text UNIQUE,
+  full_name text,
+  avatar_url text,
+  native_language text NOT NULL DEFAULT 'ky'::text,
+  target_language text NOT NULL DEFAULT 'tr'::text,
+  level integer NOT NULL DEFAULT 1,
+  xp integer NOT NULL DEFAULT 0 CHECK (xp >= 0),
+  streak_days integer NOT NULL DEFAULT 0 CHECK (streak_days >= 0),
+  longest_streak integer NOT NULL DEFAULT 0 CHECK (longest_streak >= 0),
+  is_premium boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  onboarding_completed boolean NOT NULL DEFAULT false,
+  current_course_id uuid,
+  current_timezone text,
+  daily_goal_xp integer NOT NULL DEFAULT 20 CHECK (daily_goal_xp > 0),
+  total_lessons_completed integer NOT NULL DEFAULT 0 CHECK (total_lessons_completed >= 0),
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id),
+  CONSTRAINT profiles_current_course_id_fkey FOREIGN KEY (current_course_id) REFERENCES public.courses(id)
+);
+CREATE TABLE public.review_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  lesson_id uuid,
+  vocabulary_id uuid,
+  item_type text NOT NULL,
+  target_text text NOT NULL,
+  translation_ky text,
+  due_at timestamp with time zone,
+  strength integer NOT NULL DEFAULT 0,
+  mistake_count integer NOT NULL DEFAULT 0,
+  last_reviewed_at timestamp with time zone,
+  is_completed boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT review_items_pkey PRIMARY KEY (id),
+  CONSTRAINT review_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT review_items_lesson_id_fkey FOREIGN KEY (lesson_id) REFERENCES public.lessons(id),
+  CONSTRAINT review_items_vocabulary_id_fkey FOREIGN KEY (vocabulary_id) REFERENCES public.lesson_vocabulary(id)
+);
+CREATE TABLE public.units (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  course_id uuid NOT NULL,
+  slug text NOT NULL,
+  title text NOT NULL,
+  description_ky text,
+  sort_order integer NOT NULL DEFAULT 0,
+  cefr_level text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT units_pkey PRIMARY KEY (id),
+  CONSTRAINT units_course_id_fkey FOREIGN KEY (course_id) REFERENCES public.courses(id)
+);
+CREATE TABLE public.user_achievements (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  achievement_id uuid NOT NULL,
+  earned_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT user_achievements_pkey PRIMARY KEY (id),
+  CONSTRAINT user_achievements_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT user_achievements_achievement_id_fkey FOREIGN KEY (achievement_id) REFERENCES public.achievements(id)
+);
+CREATE TABLE public.user_category_progress (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  category_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'locked'::text CHECK (status = ANY (ARRAY['locked'::text, 'available'::text, 'in_progress'::text, 'completed'::text])),
+  progress_percent integer NOT NULL DEFAULT 0 CHECK (progress_percent >= 0 AND progress_percent <= 100),
+  completed_lessons integer NOT NULL DEFAULT 0,
+  total_lessons integer NOT NULL DEFAULT 0,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT user_category_progress_pkey PRIMARY KEY (id),
+  CONSTRAINT user_category_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT user_category_progress_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id)
+);
+CREATE TABLE public.user_daily_activity (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  activity_date date NOT NULL,
+  xp_earned integer NOT NULL DEFAULT 0 CHECK (xp_earned >= 0),
+  lessons_completed integer NOT NULL DEFAULT 0 CHECK (lessons_completed >= 0),
+  review_items_completed integer NOT NULL DEFAULT 0 CHECK (review_items_completed >= 0),
+  speaking_sessions integer NOT NULL DEFAULT 0 CHECK (speaking_sessions >= 0),
+  minutes_spent integer NOT NULL DEFAULT 0 CHECK (minutes_spent >= 0),
+  CONSTRAINT user_daily_activity_pkey PRIMARY KEY (id),
+  CONSTRAINT user_daily_activity_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.user_learning_goals (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  daily_xp_goal integer NOT NULL DEFAULT 20 CHECK (daily_xp_goal > 0),
+  daily_minutes_goal integer NOT NULL DEFAULT 10 CHECK (daily_minutes_goal > 0),
+  weekly_lessons_goal integer NOT NULL DEFAULT 5 CHECK (weekly_lessons_goal > 0),
+  reminders_enabled boolean NOT NULL DEFAULT true,
+  reminder_time time without time zone,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT user_learning_goals_pkey PRIMARY KEY (id),
+  CONSTRAINT user_learning_goals_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+);
+CREATE TABLE public.user_lesson_progress (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  lesson_id uuid NOT NULL,
+  status text NOT NULL DEFAULT 'not_started'::text CHECK (status = ANY (ARRAY['not_started'::text, 'in_progress'::text, 'completed'::text])),
+  progress_percent integer NOT NULL DEFAULT 0 CHECK (progress_percent >= 0 AND progress_percent <= 100),
+  score integer,
+  accuracy numeric,
+  xp_earned integer NOT NULL DEFAULT 0,
+  attempts_count integer NOT NULL DEFAULT 0,
+  started_at timestamp with time zone,
+  completed_at timestamp with time zone,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT user_lesson_progress_pkey PRIMARY KEY (id),
+  CONSTRAINT user_lesson_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT user_lesson_progress_lesson_id_fkey FOREIGN KEY (lesson_id) REFERENCES public.lessons(id)
+);
+CREATE TABLE public.user_skill_progress (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  course_id uuid NOT NULL,
+  skill text NOT NULL CHECK (skill = ANY (ARRAY['reading'::text, 'writing'::text, 'listening'::text, 'speaking'::text, 'vocabulary'::text, 'grammar'::text])),
+  score integer NOT NULL DEFAULT 0 CHECK (score >= 0 AND score <= 100),
+  level integer NOT NULL DEFAULT 1 CHECK (level > 0),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT user_skill_progress_pkey PRIMARY KEY (id),
+  CONSTRAINT user_skill_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id),
+  CONSTRAINT user_skill_progress_course_id_fkey FOREIGN KEY (course_id) REFERENCES public.courses(id)
+);

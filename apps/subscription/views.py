@@ -41,6 +41,16 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         return Subscription.objects.filter(user=self.request.user).select_related("plan")
 
     @extend_schema(responses=ApiResponseSerializer)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return api_response(data=serializer.data, status_code=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @extend_schema(responses=ApiResponseSerializer)
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         for sub in queryset:
@@ -99,6 +109,33 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             return api_response(error=str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception:
             logger.exception("process_payment failed")
+            return api_response(
+                error="Internal server error",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses=ApiResponseSerializer,
+        description="Public webhook for external payment providers.",
+    )
+    @action(detail=False, methods=["post"], permission_classes=[permissions.AllowAny])
+    def webhook(self, request):
+        """Asynchronous webhook from payment provider."""
+        try:
+            payment = SubscriptionService.process_webhook_payment(request.data)
+            return api_response(
+                data={
+                    "status": "processed",
+                    "payment_id": payment.id,
+                    "succeeded": payment.succeeded,
+                },
+                status_code=status.HTTP_200_OK,
+            )
+        except ValueError as e:
+            return api_response(error=str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            logger.exception("Webhook processing failed")
             return api_response(
                 error="Internal server error",
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
