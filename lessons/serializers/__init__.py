@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .base import AssetSerializer, ContentUnitSerializer
+from .base import AssetSerializer, ContentUnitSerializer, CourseSerializer
 from .steps import (
     MultipleChoiceDetailSerializer, FillBlankDetailSerializer,
     MatchPairsDetailSerializer, ReorderSentenceDetailSerializer,
