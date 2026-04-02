@@ -16,10 +16,18 @@ class ContentAuthoringService:
     def create_lesson_step(lesson: Lesson, step_type: str, detail_data: dict = None, **step_kwargs):
         """
         Safely creates a LessonStep and its corresponding detail model.
+        Supports creating nested child records (choices, pairs, tokens) via detail_data.
         """
         config = StepRegistry.get(step_type)
         if not config:
             raise ValidationError(f"Unsupported step_type: {step_type}")
+
+        detail_data = detail_data or {}
+        
+        # Extract child records data to prevent them being passed to detail_model.objects.create
+        choices_data = detail_data.pop('choices', [])
+        pairs_data = detail_data.pop('pairs', [])
+        tokens_data = detail_data.pop('tokens', [])
 
         # 1. Create Step
         step = LessonStep.objects.create(
@@ -32,10 +40,47 @@ class ContentAuthoringService:
         if config.relation_name:
             # Dynamically find the model class via the relation
             detail_model = LessonStep._meta.get_field(config.relation_name).related_model
-            detail_obj = detail_model.objects.create(
+            
+            # Create instance but don't save yet to allow validation
+            detail_obj = detail_model(
                 step=step,
-                **(detail_data or {})
+                **detail_data
             )
+            
+            # Validate before saving to raise clear ValidationError instead of IntegrityError
+            try:
+                detail_obj.full_clean()
+            except ValidationError as e:
+                # Re-raise with more context if needed
+                raise ValidationError(f"Invalid detail data for {step_type}: {e.message_dict}")
+            
+            detail_obj.save()
+
+            # 3. Handle nested child records
+            if step_type == 'multiple_choice' and choices_data:
+                from ..models.engine import StepChoice
+                for i, choice in enumerate(choices_data):
+                    StepChoice.objects.create(
+                        step_detail=detail_obj,
+                        sort_order=i,
+                        **choice
+                    )
+            elif step_type == 'match_pairs' and pairs_data:
+                from ..models.engine import MatchPairItem
+                for i, pair in enumerate(pairs_data):
+                    MatchPairItem.objects.create(
+                        step_detail=detail_obj,
+                        sort_order=i,
+                        **pair
+                    )
+            elif step_type == 'reorder_sentence' and tokens_data:
+                from ..models.engine import ReorderToken
+                for i, token in enumerate(tokens_data):
+                    ReorderToken.objects.create(
+                        step_detail=detail_obj,
+                        sort_order=i,
+                        **token
+                    )
             
         return step
 

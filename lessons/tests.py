@@ -264,10 +264,37 @@ class AuthoringTests(TestCase):
         step = ContentAuthoringService.create_lesson_step(
             lesson=self.lesson,
             step_type='multiple_choice',
-            sort_order=1
+            sort_order=1,
+            detail_data={
+                'choices': [
+                    {'text': 'Choice 1', 'is_correct': True}
+                ]
+            }
         )
         self.assertEqual(step.step_type, 'multiple_choice')
         self.assertIsNotNone(step.detail_multiple_choice)
+        self.assertEqual(step.detail_multiple_choice.choices.count(), 1)
+
+    def test_create_lesson_step_validation(self):
+        """Verify service raises ValidationError for missing required fields."""
+        from .services import ContentAuthoringService
+        from django.core.exceptions import ValidationError
+        
+        with self.assertRaises(ValidationError) as cm:
+            ContentAuthoringService.create_lesson_step(
+                lesson=self.lesson,
+                step_type='type_translation',
+                prompt='Translate'
+            )
+        self.assertIn('acceptable_answers', str(cm.exception))
+
+    def test_seeding_command_completes(self):
+        """Verify seeding command no longer crashes."""
+        from django.core.management import call_command
+        # Run seeding command. It should work without IntegrityError now.
+        call_command('seed_lessons_demo', reset=True)
+        # Check that some lessons were created
+        self.assertTrue(Lesson.objects.filter(category__course__slug='english-for-kyrgyz').exists())
 
     def test_clone_lesson_service(self):
         """Verify deep cloning of lessons works."""

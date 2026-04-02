@@ -229,22 +229,40 @@ class Command(BaseCommand):
             # Общий набор шагов для остальных уроков
             ContentAuthoringService.create_lesson_step(
                 lesson=lesson, step_type='multiple_choice',
-                prompt='Choose the correct greeting', sort_order=1
+                prompt='Choose the correct greeting', sort_order=1,
+                detail_data={
+                    'choices': [
+                        {'text': 'Hello', 'is_correct': True},
+                        {'text': 'Goodbye', 'is_correct': False},
+                        {'text': 'Thank you', 'is_correct': False},
+                    ]
+                }
             )
             ContentAuthoringService.create_lesson_step(
                 lesson=lesson, step_type='type_translation',
-                prompt='Translate the phrase', sort_order=2
+                prompt='Translate the phrase', sort_order=2,
+                detail_data={
+                    'source_text': 'Саламатсызбы',
+                    'acceptable_answers': ['Hello', 'Hi']
+                }
             )
 
     def _add_basic_hello(self, lesson, create_tg, create_cu):
-        create_cu('word', 'Hello', 'Салам')
+        cu_hello = create_cu('word', 'Hello', 'Салам')
         create_cu('word', 'Goodbye', 'Жакшы калыңыз')
 
         ContentAuthoringService.create_lesson_step(
             lesson=lesson, step_type='multiple_choice',
             prompt='How do you say "Салам" in English?',
             prompt_group=create_tg({'ky': '"Салам" англисче кандай болот?', 'en': 'How do you say "Hello" in English?'}),
-            sort_order=1
+            sort_order=1,
+            detail_data={
+                'choices': [
+                    {'content_unit': cu_hello, 'is_correct': True},
+                    {'text': 'Good morning', 'is_correct': False},
+                    {'text': 'Good evening', 'is_correct': False},
+                ]
+            }
         )
 
     def _add_introducing_yourself(self, lesson, create_tg, create_cu):
@@ -265,14 +283,24 @@ class Command(BaseCommand):
         else:
             ContentAuthoringService.create_lesson_step(
                 lesson=lesson, step_type='speak_phrase',
-                prompt='Say the food order', sort_order=1
+                prompt='Say the food order', sort_order=1,
+                detail_data={
+                    'target_text': 'I would like to order some bread please.'
+                }
             )
 
     # ====================== УРОКИ ДЛЯ RUSSIAN ======================
     def _add_basic_hello_russian(self, lesson, create_tg, create_cu):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson, step_type='match_pairs',
-            prompt='Сопоставьте слова', sort_order=1
+            prompt='Сопоставьте слова', sort_order=1,
+            detail_data={
+                'pairs': [
+                    {'left_text': 'Привет', 'right_text': 'Салам'},
+                    {'left_text': 'Пока', 'right_text': 'Жакшы кал'},
+                    {'left_text': 'Спасибо', 'right_text': 'Рахмат'},
+                ]
+            }
         )
 
     def _add_basic_food_russian(self, lesson, create_tg, create_cu):
