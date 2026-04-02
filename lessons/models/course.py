@@ -63,7 +63,7 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
 
     def __str__(self):
-        return self.title_ky
+        return str(self.title_ky or "Unnamed Category")
 
 
 class Lesson(models.Model):
