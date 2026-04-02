@@ -1,37 +1,33 @@
-import uuid
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.text import slugify
 
 from lessons.models.localization import Language, TranslationGroup, Translation
 from lessons.models.course import Course, Category, Lesson, LessonVocabulary
-from lessons.models.engine import (
-    ContentUnit, StepChoice, MatchPairItem, ReorderToken, LessonStep
-)
+from lessons.models.engine import ContentUnit, StepChoice, MatchPairItem, ReorderToken
 from lessons.services.authoring_service import ContentAuthoringService
 
 
 class Command(BaseCommand):
-    help = "Seeds the database with rich demo courses: English-Kyrgyz and Russian-Kyrgyz"
+    help = "Добавляет много реалистичных уроков в существующие категории курсов English-Kyrgyz и Russian-Kyrgyz"
 
     def add_arguments(self, parser):
-        parser.add_argument('--reset', action='store_true', help='Delete existing demo data before seeding')
-        parser.add_argument('--with-user', action='store_true', help='Create a demo user and enroll them')
+        parser.add_argument('--reset', action='store_true', help='Удалить существующие демо-данные перед заполнением')
+        parser.add_argument('--with-user', action='store_true', help='Создать демо-пользователя и записать его на курсы')
 
     @transaction.atomic
     def handle(self, *args, **options):
         if options['reset']:
-            self.stdout.write(self.style.WARNING("Resetting demo data..."))
+            self.stdout.write(self.style.WARNING("Сброс демо-данных..."))
             Course.objects.filter(slug__in=['english-for-kyrgyz', 'russian-for-kyrgyz']).delete()
-            # Можно также удалить связанные категории/уроки, но delete курса обычно каскадит
 
-        # ==================== LANGUAGES ====================
-        self.stdout.write("Seeding languages...")
+        # ==================== ЯЗЫКИ ====================
+        self.stdout.write("Создание языков...")
         en, _ = Language.objects.get_or_create(code='en', defaults={'name': 'English'})
         ky, _ = Language.objects.get_or_create(code='ky', defaults={'name': 'Kyrgyz'})
         ru, _ = Language.objects.get_or_create(code='ru', defaults={'name': 'Russian'})
 
-        # ==================== HELPER FUNCTIONS ====================
+        # ==================== HELPER ФУНКЦИИ ====================
         def create_tg(texts_dict: dict):
             tg = TranslationGroup.objects.create()
             for lang_code, text in texts_dict.items():
@@ -39,7 +35,7 @@ class Command(BaseCommand):
                 Translation.objects.create(group=tg, language=lang, text=text)
             return tg
 
-        def create_cu(unit_type: str, text_en: str, meaning_ky: str, ky_text: str = None):
+        def create_cu(unit_type: str, text_en: str, meaning_ky: str, ky_text=None):
             tg_text = create_tg({'en': text_en, 'ky': ky_text or meaning_ky})
             tg_meaning = create_tg({'ky': meaning_ky})
             return ContentUnit.objects.create(
@@ -50,9 +46,8 @@ class Command(BaseCommand):
                 meaning_group=tg_meaning
             )
 
-        # ==================== ENGLISH COURSE ====================
-        self.stdout.write("Seeding 'English for Kyrgyz' course...")
-        course_en, created_en = Course.objects.get_or_create(
+        # ==================== ENGLISH FOR KYRGYZ ====================
+        course_en, _ = Course.objects.get_or_create(
             slug='english-for-kyrgyz',
             defaults={
                 'title': 'English for Beginners',
@@ -64,14 +59,11 @@ class Command(BaseCommand):
             }
         )
 
-        if created_en:
-            self._seed_english_course(course_en, create_tg, create_cu)
-        else:
-            self.stdout.write(self.style.WARNING("Course 'english-for-kyrgyz' already exists. Skipping creation."))
+        self.stdout.write(f"Добавляем уроки в курс: {course_en.title}")
+        self._seed_english_course(course_en, create_tg, create_cu)
 
-        # ==================== RUSSIAN COURSE ====================
-        self.stdout.write("Seeding 'Russian for Kyrgyz' course...")
-        course_ru, created_ru = Course.objects.get_or_create(
+        # ==================== RUSSIAN FOR KYRGYZ ====================
+        course_ru, _ = Course.objects.get_or_create(
             slug='russian-for-kyrgyz',
             defaults={
                 'title': 'Русский для кыргызов',
@@ -83,195 +75,185 @@ class Command(BaseCommand):
             }
         )
 
-        if created_ru:
-            self._seed_russian_course(course_ru, create_tg, create_cu)
-        else:
-            self.stdout.write(self.style.WARNING("Course 'russian-for-kyrgyz' already exists. Skipping creation."))
+        self.stdout.write(f"Добавляем уроки в курс: {course_ru.title}")
+        self._seed_russian_course(course_ru, create_tg, create_cu)
 
-        # ==================== DEMO USER ====================
+        # ==================== ДЕМО ПОЛЬЗОВАТЕЛЬ ====================
         if options.get('with_user'):
             self._create_demo_user(course_en, course_ru)
 
-        self.stdout.write(self.style.SUCCESS("\n=== Seeding completed successfully! ==="))
-        self.stdout.write(f"English lessons: {Lesson.objects.filter(category__course=course_en).count()}")
-        self.stdout.write(f"Russian lessons: {Lesson.objects.filter(category__course=course_ru).count()}")
+        self.stdout.write(self.style.SUCCESS("\n=== Заполнение базы данных успешно завершено! ==="))
+        self.stdout.write(f"Уроков в English курсе: {Lesson.objects.filter(category__course=course_en).count()}")
+        self.stdout.write(f"Уроков в Russian курсе: {Lesson.objects.filter(category__course=course_ru).count()}")
 
     # ====================== ENGLISH COURSE ======================
     def _seed_english_course(self, course, create_tg, create_cu):
-        cat_greetings = Category.objects.create(
+        # --- Категория 1: Саламдашуу ---
+        cat_greetings, _ = Category.objects.get_or_create(
             course=course,
             slug='greetings',
-            title_ky='Саламдашуу',
-            title_target='Greetings',
-            description_ky='Адамдар менен саламдашууну жана коштошууну үйрөнүңүз.',
-            icon='hand',
-            sort_order=1
+            defaults={
+                'title_ky': 'Саламдашуу',
+                'title_target': 'Greetings',
+                'description_ky': 'Адамдар менен саламдашууну жана коштошууну үйрөнүңүз.',
+                'icon': 'hand',
+                'sort_order': 1
+            }
         )
 
-        # 4 урока вGreetings
-        lessons_greetings = [
-            ("basic-hello", "Hello & Goodbye", "Эң негизги саламдашуу сөздөрү.", 50, 1),
-            ("introducing-yourself", "Introducing Yourself", "Өзүңүздү тааныштыруу.", 70, 2),
-            ("formal-informal", "Formal vs Informal", "Расмий жана бейрасмий саламдашуу.", 65, 3),
-            ("thanks-politeness", "Thank You & Politeness", "Рахмат айтуу жана сылык сөздөр.", 60, 4),
+        greetings_lessons = [
+            ("basic-hello", "Hello & Goodbye", "Эң негизги саламдашуу сөздөрү.", 50),
+            ("introducing-yourself", "Introducing Yourself", "Өзүңүздү тааныштыруу.", 70),
+            ("formal-informal", "Formal vs Informal", "Расмий жана бейрасмий саламдашуу.", 65),
+            ("thanks-politeness", "Thank You & Politeness", "Рахмат айтуу жана сылык сөздөр.", 60),
+            ("small-talk", "Small Talk", "Жеңил баарлашуу.", 55),
+            ("meeting-people", "Meeting New People", "Жаңы адамдар менен таанышуу.", 75),
+            ("greetings-practice", "Greetings Practice", "Практика саламдашуу.", 45),
         ]
 
-        for slug, title, desc_ky, xp, order in lessons_greetings:
-            lesson = Lesson.objects.create(
+        for i, (slug, title, desc, xp) in enumerate(greetings_lessons, 1):
+            lesson, created = Lesson.objects.get_or_create(
                 category=cat_greetings,
                 slug=slug,
-                title=title,
-                description_ky=desc_ky,
-                xp_reward=xp,
-                sort_order=order
+                defaults={
+                    'title': title,
+                    'description_ky': desc,
+                    'xp_reward': xp,
+                    'sort_order': i
+                }
             )
-            if "hello" in slug:
-                self._add_basic_hello(lesson, create_tg, create_cu)
-            elif "introducing" in slug:
-                self._add_introducing_yourself(lesson, create_tg, create_cu)
-            elif "formal" in slug:
-                self._add_formal_informal(lesson, create_tg, create_cu)
-            elif "thanks" in slug:
-                self._add_thanks_politeness(lesson, create_tg, create_cu)
+            if created:
+                self._add_greetings_lesson(lesson, i, create_tg, create_cu)
 
-        # Food & Drinks - 5 уроков
-        cat_food = Category.objects.create(
+        # --- Категория 2: Тамак-аш жана суусундуктар ---
+        cat_food, _ = Category.objects.get_or_create(
             course=course,
             slug='food-drinks',
-            title_ky='Тамак-аш жана суусундуктар',
-            title_target='Food & Drinks',
-            description_ky='Күнүмдүк тамак-аш жана суусундуктар жөнүндө сүйлөшүү.',
-            icon='utensils',
-            sort_order=2
+            defaults={
+                'title_ky': 'Тамак-аш жана суусундуктар',
+                'title_target': 'Food & Drinks',
+                'description_ky': 'Күнүмдүк тамак-аш жана суусундуктар жөнүндө сүйлөшүү.',
+                'icon': 'utensils',
+                'sort_order': 2
+            }
         )
 
         food_lessons = [
-            ("water-basic-food", "Water and Basic Food", "Суу жана негизги азыктар.", 1),
-            ("fruits-vegetables", "Fruits and Vegetables", "Жемиштер жана жашылчалар.", 2),
-            ("ordering-cafe", "Ordering in a Cafe", "Кафеде тамак заказ кылуу.", 3),
-            ("at-market", "At the Market", "Базарда сүйлөшүү.", 4),
-            ("breakfast-meals", "Breakfast and Daily Meals", "Эртең мененки тамак жана тамак түрлөрү.", 5),
+            ("water-basic", "Water and Basic Items", "Суу жана негизги азыктар.", 60),
+            ("fruits-vegetables", "Fruits and Vegetables", "Жемиштер жана жашылчалар.", 65),
+            ("ordering-cafe", "Ordering Food in Cafe", "Кафеде тамак заказ кылуу.", 80),
+            ("at-market", "At the Market", "Базарда сүйлөшүү.", 70),
+            ("breakfast-meals", "Breakfast and Daily Meals", "Эртең мененки тамак.", 55),
+            ("restaurant-dialogue", "Restaurant Dialogue", "Ресторанда сүйлөшүү.", 85),
+            ("favorite-food", "Talking About Favorite Food", "Сүйүктүү тамактар жөнүндө.", 75),
         ]
 
-        for slug, title, desc_ky, order in food_lessons:
-            lesson = Lesson.objects.create(
+        for i, (slug, title, desc, xp) in enumerate(food_lessons, 1):
+            lesson, created = Lesson.objects.get_or_create(
                 category=cat_food,
                 slug=slug,
-                title=title,
-                description_ky=desc_ky,
-                xp_reward=60 + order * 8,
-                sort_order=order
+                defaults={
+                    'title': title,
+                    'description_ky': desc,
+                    'xp_reward': xp,
+                    'sort_order': i
+                }
             )
-            self._add_food_lesson(lesson, order, create_tg, create_cu)
+            if created:
+                self._add_food_lesson(lesson, i, create_tg, create_cu)
 
     # ====================== RUSSIAN COURSE ======================
     def _seed_russian_course(self, course, create_tg, create_cu):
-        # Уникальные slug'и с суффиксом -ru
-        cat_greetings = Category.objects.create(
+        cat_greetings, _ = Category.objects.get_or_create(
             course=course,
             slug='greetings-ru',
-            title_ky='Саламдашуу',
-            title_target='Приветствия',
-            description_ky='Орус тилинде саламдашууну үйрөнүңүз.',
-            icon='hand',
-            sort_order=1
+            defaults={
+                'title_ky': 'Саламдашуу',
+                'title_target': 'Приветствия',
+                'description_ky': 'Орус тилинде саламдашууну үйрөнүңүз.',
+                'icon': 'hand',
+                'sort_order': 1
+            }
         )
 
-        lesson_hello_ru = Lesson.objects.create(
-            category=cat_greetings,
-            slug='basic-hello-ru',
-            title='Здравствуй и До свидания',
-            description_ky='Негизги саламдашуу сөздөрү.',
-            xp_reward=50,
-            sort_order=1
-        )
-        self._add_basic_hello_russian(lesson_hello_ru, create_tg, create_cu)
+        greetings_ru = [
+            ("basic-hello-ru", "Здравствуй и До свидания", "Негизги саламдашуу.", 50),
+            ("introducing-ru", "Представление себя", "Өзүңүздү тааныштыруу орусча.", 70),
+            ("formal-ru", "Формальное и неформальное общение", "Расмий жана бейрасмий.", 65),
+        ]
 
-        # Food category
-        cat_food = Category.objects.create(
+        for i, (slug, title, desc, xp) in enumerate(greetings_ru, 1):
+            lesson, created = Lesson.objects.get_or_create(
+                category=cat_greetings,
+                slug=slug,
+                defaults={'title': title, 'description_ky': desc, 'xp_reward': xp, 'sort_order': i}
+            )
+            if created:
+                self._add_basic_hello_russian(lesson, create_tg, create_cu)
+
+        # Food category for Russian
+        cat_food, _ = Category.objects.get_or_create(
             course=course,
             slug='food-drinks-ru',
-            title_ky='Тамак-аш жана суусундуктар',
-            title_target='Еда и напитки',
-            description_ky='Орус тилинде тамак-аш темасы.',
-            icon='utensils',
-            sort_order=2
+            defaults={
+                'title_ky': 'Тамак-аш жана суусундуктар',
+                'title_target': 'Еда и напитки',
+                'description_ky': 'Орус тилинде тамак-аш темасы.',
+                'icon': 'utensils',
+                'sort_order': 2
+            }
         )
 
-        lesson_food_ru = Lesson.objects.create(
-            category=cat_food,
-            slug='basic-food-ru',
-            title='Вода, хлеб и основные продукты',
-            description_ky='Суу, нан жана негизги азыктар.',
-            xp_reward=60,
-            sort_order=1
-        )
-        self._add_basic_food_russian(lesson_food_ru, create_tg, create_cu)
+        food_ru = [
+            ("basic-food-ru", "Вода и хлеб", "Суу жана нан.", 60),
+            ("ordering-food-ru", "Заказ еды", "Тамак заказ кылуу.", 80),
+        ]
 
-    # ====================== LESSON CONTENT ======================
-    # (Оставил твои методы почти без изменений, только добавил больше данных где нужно)
+        for i, (slug, title, desc, xp) in enumerate(food_ru, 1):
+            lesson, created = Lesson.objects.get_or_create(
+                category=cat_food,
+                slug=slug,
+                defaults={'title': title, 'description_ky': desc, 'xp_reward': xp, 'sort_order': i}
+            )
+            if created:
+                self._add_basic_food_russian(lesson, create_tg, create_cu)
+
+    # ====================== УРОКИ ДЛЯ ENGLISH ======================
+    def _add_greetings_lesson(self, lesson, lesson_num, create_tg, create_cu):
+        # Разные типы шагов в зависимости от урока
+        if lesson_num == 1:
+            self._add_basic_hello(lesson, create_tg, create_cu)
+        elif lesson_num == 2:
+            self._add_introducing_yourself(lesson, create_tg, create_cu)
+        else:
+            # Общий набор шагов для остальных уроков
+            ContentAuthoringService.create_lesson_step(
+                lesson=lesson, step_type='multiple_choice',
+                prompt='Choose the correct greeting', sort_order=1
+            )
+            ContentAuthoringService.create_lesson_step(
+                lesson=lesson, step_type='type_translation',
+                prompt='Translate the phrase', sort_order=2
+            )
 
     def _add_basic_hello(self, lesson, create_tg, create_cu):
         create_cu('word', 'Hello', 'Салам')
-        create_cu('word', 'Hi', 'Салам')
         create_cu('word', 'Goodbye', 'Жакшы калыңыз')
-        create_cu('word', 'See you later', 'Көрүшкөнчө')
 
-        # Multiple choice
         ContentAuthoringService.create_lesson_step(
             lesson=lesson, step_type='multiple_choice',
             prompt='How do you say "Салам" in English?',
             prompt_group=create_tg({'ky': '"Салам" англисче кандай болот?', 'en': 'How do you say "Hello" in English?'}),
             sort_order=1
         )
-        step = lesson.steps.get(sort_order=1).detail
-        StepChoice.objects.bulk_create([
-            StepChoice(step_detail=step, text='Hello', is_correct=True, sort_order=1),
-            StepChoice(step_detail=step, text='Apple', is_correct=False, sort_order=2),
-            StepChoice(step_detail=step, text='Water', is_correct=False, sort_order=3),
-        ])
-
-        # Fill blank + Match pairs (как в оригинале)
-        ContentAuthoringService.create_lesson_step(
-            lesson=lesson, step_type='fill_blank', prompt='Complete the greeting',
-            sort_order=2, detail_data={'sentence_template': '[[blank]], my name is John.', 'acceptable_answers': ['Hello', 'Hi']}
-        )
-
-        ContentAuthoringService.create_lesson_step(
-            lesson=lesson, step_type='match_pairs', prompt='Match the words', sort_order=3, detail_data={}
-        )
-        step3 = lesson.steps.get(sort_order=3).detail
-        MatchPairItem.objects.bulk_create([
-            MatchPairItem(step_detail=step3, left_text='Hello', right_text='Салам', sort_order=1),
-            MatchPairItem(step_detail=step3, left_text='Goodbye', right_text='Жакшы калыңыз', sort_order=2),
-        ])
 
     def _add_introducing_yourself(self, lesson, create_tg, create_cu):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson, step_type='type_translation',
-            prompt='Translate into English',
+            prompt='Translate: Менин атым ...',
             sort_order=1,
-            detail_data={'source_text': 'Менин атым Адил.', 'acceptable_answers': ['My name is Adil.', 'I am Adil.']}
+            detail_data={'source_text': 'Менин атым Адил.', 'acceptable_answers': ['My name is Adil.']}
         )
-
-    def _add_formal_informal(self, lesson, create_tg, create_cu):
-        ContentAuthoringService.create_lesson_step(
-            lesson=lesson, step_type='multiple_choice',
-            prompt='Which greeting is more formal?', sort_order=1
-        )
-
-    def _add_thanks_politeness(self, lesson, create_tg, create_cu):
-        ContentAuthoringService.create_lesson_step(
-            lesson=lesson, step_type='reorder_sentence',
-            prompt='Put the words in order', sort_order=1, detail_data={}
-        )
-        step = lesson.steps.get(sort_order=1).detail
-        ReorderToken.objects.bulk_create([
-            ReorderToken(step_detail=step, text='Thank', sort_order=1),
-            ReorderToken(step_detail=step, text='you', sort_order=2),
-            ReorderToken(step_detail=step, text='very', sort_order=3),
-            ReorderToken(step_detail=step, text='much', sort_order=4),
-        ])
 
     def _add_food_lesson(self, lesson, lesson_num, create_tg, create_cu):
         if lesson_num == 1:
@@ -282,19 +264,21 @@ class Command(BaseCommand):
             )
         else:
             ContentAuthoringService.create_lesson_step(
-                lesson=lesson, step_type='multiple_choice',
-                prompt='What is "Алма" in English?', sort_order=1
+                lesson=lesson, step_type='speak_phrase',
+                prompt='Say the food order', sort_order=1
             )
 
+    # ====================== УРОКИ ДЛЯ RUSSIAN ======================
     def _add_basic_hello_russian(self, lesson, create_tg, create_cu):
         ContentAuthoringService.create_lesson_step(
-            lesson=lesson, step_type='match_pairs', prompt='Match Russian and Kyrgyz', sort_order=1
+            lesson=lesson, step_type='match_pairs',
+            prompt='Сопоставьте слова', sort_order=1
         )
 
     def _add_basic_food_russian(self, lesson, create_tg, create_cu):
         ContentAuthoringService.create_lesson_step(
             lesson=lesson, step_type='type_translation',
-            prompt='Translate into Russian', sort_order=1,
+            prompt='Переведите на русский', sort_order=1,
             detail_data={'source_text': 'Суу', 'acceptable_answers': ['Вода']}
         )
 
@@ -304,18 +288,19 @@ class Command(BaseCommand):
         from lessons.services.category_progress_service import CategoryProgressService
 
         User = get_user_model()
-        user, _ = User.objects.get_or_create(
+        user, created = User.objects.get_or_create(
             nickname='demo_student',
             defaults={'email': 'demo@example.com', 'is_active': True}
         )
-        if user.password == '':
+        if created:
             user.set_password('demo1234')
             user.save()
 
-        for course in filter(None, [course_en, course_ru]):
-            CourseEnrollmentService.ensure_enrollment(user, course)
+        for course in [course_en, course_ru]:
+            if course:
+                CourseEnrollmentService.ensure_enrollment(user, course)
 
-        for cat in Category.objects.filter(course__in=[c for c in [course_en, course_ru] if c]):
-            CategoryProgressService.update_category_progress(user, cat)
+        for category in Category.objects.filter(course__in=[c for c in [course_en, course_ru] if c]):
+            CategoryProgressService.update_category_progress(user, category)
 
-        self.stdout.write(self.style.SUCCESS("Demo user 'demo_student' (password: demo1234) ready!"))
+        self.stdout.write(self.style.SUCCESS(f"Демо-пользователь 'demo_student' (пароль: demo1234) создан и записан на курсы!"))
