@@ -29,16 +29,26 @@ class CourseViewSet(viewsets.ReadOnlyModelViewSet):
         
         # Initialize progress for all categories in the course
         from .services.category_progress_service import CategoryProgressService
-        from .models.course import Category
-        categories = Category.objects.filter(course=course)
+        from .models.course import Category, Lesson
+        categories = Category.objects.filter(course=course).order_by('sort_order')
         for category in categories:
             CategoryProgressService.update_category_progress(request.user, category)
+            
+        first_lesson_id = None
+        if categories.exists():
+            first_lesson = Lesson.objects.filter(category=categories.first()).order_by('sort_order').first()
+            if first_lesson:
+                first_lesson_id = str(first_lesson.id)
         
         # Also update current course for user
         request.user.current_course = course
         request.user.save()
         
-        return Response({"status": "enrolled", "course_id": course.id})
+        return Response({
+            "status": "enrolled", 
+            "course_id": str(course.id),
+            "first_lesson_id": first_lesson_id
+        })
 
 
 class LessonStepViewSet(viewsets.ReadOnlyModelViewSet):
