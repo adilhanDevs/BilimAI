@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
+import logging
+import traceback
+logger = logging.getLogger(__name__)
 from django.urls import reverse
 from .models.course import Course, Unit, Category, Lesson, LessonVocabulary
 from .models.engine import (
@@ -223,6 +226,13 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ('course', 'difficulty')
     search_fields = ('title_ky', 'slug')
     prepopulated_fields = {'slug': ('title_ky',)}
+
+    def changelist_view(self, request, extra_context=None):
+        try:
+            return super().changelist_view(request, extra_context=extra_context)
+        except Exception as e:
+            logger.error(f"\n====================================\nCRITICAL CATEGORY ADMIN ERROR:\n{e}\n{traceback.format_exc()}\n====================================\n".replace('\n', ' --NEXT_LINE-- '))
+            raise
 
 # --- Progress Admin ---
 
