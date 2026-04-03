@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Sum
 from ..models.progress import (
     LessonSession, StepAttempt, SpeechSubmission, UserLessonProgress,Lesson,
     ReviewItem, UserCategoryProgress, UserSkillProgress, CourseEnrollment
@@ -18,8 +19,13 @@ class LessonSummarySerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         if not user or not user.is_authenticated:
             return 'not_started'
-        progress = obj.user_progress.filter(user=user).first()
-        return progress.status if progress else 'not_started'
+        try:
+            progress = obj.user_progress.filter(user=user).first()
+            return progress.status if progress else 'not_started'
+        except Exception as e:
+            # Log the error and return default status
+            print(f"Error getting status for lesson {obj.id}: {e}")
+            return 'not_started'
 
 
 class SessionStatusSerializer(serializers.ModelSerializer):
@@ -118,9 +124,13 @@ class UserCategoryProgressSerializer(serializers.ModelSerializer):
         fields = ['category_id', 'category_title', 'status', 'progress_percent', 'completed_lessons', 'total_lessons', 'lessons']
 
     def get_lessons(self, obj):
-        # We need the lessons belonging to this category
-        lessons = obj.category.lessons.filter(is_published=True).order_by('sort_order')
-        return LessonSummarySerializer(lessons, many=True, context=self.context).data
+        try:
+            # We need the lessons belonging to this category
+            lessons = obj.category.lessons.filter(is_published=True).order_by('sort_order')
+            return LessonSummarySerializer(lessons, many=True, context=self.context).data
+        except Exception as e:
+            print(f"Error getting lessons for category {obj.category.id}: {e}")
+            return []
 
 
 class CourseSummarySerializer(serializers.ModelSerializer):
@@ -141,20 +151,32 @@ class CourseSummarySerializer(serializers.ModelSerializer):
         return obj.user.streak
 
     def get_total_xp(self, obj):
-        from ..models.progress import UserLessonProgress
-        agg = UserLessonProgress.objects.filter(user=obj.user, lesson__category__course=obj.course).aggregate(total=models.Sum('total_xp_earned'))
-        return agg['total'] or 0
+        try:
+            from ..models.progress import UserLessonProgress
+            agg = UserLessonProgress.objects.filter(user=obj.user, lesson__category__course=obj.course).aggregate(total=Sum('total_xp_earned'))
+            return agg['total'] or 0
+        except Exception as e:
+            print(f"Error getting total_xp for course {obj.course.id}: {e}")
+            return 0
 
     def get_hearts_remaining(self, obj):
-        # This is a bit arbitrary if hearts are global, but let's say they are 5 for now 
-        # or we could pick the last active session's hearts
-        last_session = LessonSession.objects.filter(user=obj.user, lesson__category__course=obj.course).order_by('-started_at').first()
-        return last_session.hearts_remaining if last_session else 5
+        try:
+            # This is a bit arbitrary if hearts are global, but let's say they are 5 for now 
+            # or we could pick the last active session's hearts
+            last_session = LessonSession.objects.filter(user=obj.user, lesson__category__course=obj.course).order_by('-started_at').first()
+            return last_session.hearts_remaining if last_session else 5
+        except Exception as e:
+            print(f"Error getting hearts_remaining for course {obj.course.id}: {e}")
+            return 5
 
     def get_categories(self, obj):
-        from ..models.progress import UserCategoryProgress
-        qs = UserCategoryProgress.objects.filter(user=obj.user, category__course=obj.course).select_related('category')
-        return UserCategoryProgressSerializer(qs, many=True, context=self.context).data
+        try:
+            from ..models.progress import UserCategoryProgress
+            qs = UserCategoryProgress.objects.filter(user=obj.user, category__course=obj.course).select_related('category')
+            return UserCategoryProgressSerializer(qs, many=True, context=self.context).data
+        except Exception as e:
+            print(f"Error getting categories for course {obj.course.id}: {e}")
+            return []
 
     def get_skills(self, obj):
         from ..models.progress import UserSkillProgress
