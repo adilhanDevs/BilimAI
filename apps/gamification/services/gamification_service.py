@@ -115,8 +115,15 @@ class GamificationService:
         return cls.summary(user_locked)
 
     @staticmethod
+    def _today_points_total(user: User) -> int:
+        today = GamificationService._local_today()
+        agg = ActivityLog.objects.filter(user=user, created_at__date=today).aggregate(total=Sum("delta_points"))
+        return int(agg["total"] or 0)
+
+    @staticmethod
     def summary(user: User) -> dict:
         monthly_points = GamificationService._monthly_points_total(user)
+        today_points = GamificationService._today_points_total(user)
         return {
             "points": user.points,
             "level": user.level,
@@ -125,6 +132,8 @@ class GamificationService:
             "last_streak_date": user.last_streak_date,
             "monthly_reward_unlocked": user.monthly_reward_unlocked,
             "monthly_points_this_month": monthly_points,
+            "today_points": today_points,
+            "daily_goal_xp": user.daily_goal_xp,
         }
 
     @staticmethod

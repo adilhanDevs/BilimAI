@@ -167,6 +167,7 @@ class ReviewItem(models.Model):
     due_at = models.DateTimeField(blank=True, null=True)
     strength = models.IntegerField(default=0)
     mistake_count = models.IntegerField(default=0)
+    correct_streak = models.IntegerField(default=0)
     last_reviewed_at = models.DateTimeField(blank=True, null=True)
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

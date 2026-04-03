@@ -1,0 +1,481 @@
+{
+  "course": {
+    "slug": "ky-for-ru",
+    "title": "Кыргызский для русскоговорящих",
+    "source_language": "ru",
+    "target_language": "ky",
+    "cefr_min": "A0",
+    "cefr_max": "B1",
+    "description_ky": "Орус тилдүү колдонуучулар үчүн кыргыз тили курсу."
+  },
+  "category": {
+    "slug": "alphabet-and-sounds",
+    "title_ky": "Алфавит жана тыбыштар",
+    "title_target": "Алфавит и звуки",
+    "description_ky": "Кыргыз тилиндеги өзгөчө тамгаларды жана тыбыштарды үйрөнүү.",
+    "sort_order": 1,
+    "estimated_minutes": 60,
+    "vocabulary_count": 10
+  },
+  "lesson": {
+    "slug": "letters-oe-ue-ng-intro",
+    "title": "Буквы Ө, Ү, Ң — узнаём, слышим, произносим",
+    "subtitle": "Первое знакомство с особыми кыргызскими буквами",
+    "description_ky": "Ө, Ү, Ң тамгаларын таануу, угуу жана туура айтуу боюнча баштапкы сабак.",
+    "level": "A0",
+    "difficulty": "beginner",
+    "duration_min": 10,
+    "xp_reward": 210,
+    "grammar_focus": "Фонетика и чтение: Ө, Ү, Ң",
+    "sort_order": 1
+  },
+  "vocabulary": [
+    {
+      "sort_order": 1,
+      "word_or_phrase_target": "көл",
+      "translation_ky": "озеро",
+      "transliteration": "köl",
+      "part_of_speech": "noun",
+      "example_target": "Көл чоң.",
+      "example_ky": "Озеро большое.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 2,
+      "word_or_phrase_target": "өрүк",
+      "translation_ky": "абрикос",
+      "transliteration": "örük",
+      "part_of_speech": "noun",
+      "example_target": "Өрүк таттуу.",
+      "example_ky": "Абрикос сладкий.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 3,
+      "word_or_phrase_target": "өчүр",
+      "translation_ky": "выключи",
+      "transliteration": "öchür",
+      "part_of_speech": "verb",
+      "example_target": "Жарыкты өчүр.",
+      "example_ky": "Выключи свет.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 4,
+      "word_or_phrase_target": "күн",
+      "translation_ky": "день; солнце",
+      "transliteration": "kün",
+      "part_of_speech": "noun",
+      "example_target": "Бүгүн күн жакшы.",
+      "example_ky": "Сегодня хороший день.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 5,
+      "word_or_phrase_target": "гүл",
+      "translation_ky": "цветок",
+      "transliteration": "gül",
+      "part_of_speech": "noun",
+      "example_target": "Бул гүл кооз.",
+      "example_ky": "Этот цветок красивый.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 6,
+      "word_or_phrase_target": "үч",
+      "translation_ky": "три",
+      "transliteration": "üch",
+      "part_of_speech": "numeral",
+      "example_target": "Үч алма бар.",
+      "example_ky": "Есть три яблока.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 7,
+      "word_or_phrase_target": "жаңы",
+      "translation_ky": "новый",
+      "transliteration": "jaŋy",
+      "part_of_speech": "adjective",
+      "example_target": "Бул жаңы китеп.",
+      "example_ky": "Это новая книга.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 8,
+      "word_or_phrase_target": "оң",
+      "translation_ky": "правый; правильный",
+      "transliteration": "oŋ",
+      "part_of_speech": "adjective",
+      "example_target": "Оң кол.",
+      "example_ky": "Правая рука.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 9,
+      "word_or_phrase_target": "мага",
+      "translation_ky": "мне",
+      "transliteration": "maga",
+      "part_of_speech": "pronoun",
+      "example_target": "Мага айт.",
+      "example_ky": "Скажи мне.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 10,
+      "word_or_phrase_target": "бер",
+      "translation_ky": "дай",
+      "transliteration": "ber",
+      "part_of_speech": "verb",
+      "example_target": "Мага бер.",
+      "example_ky": "Дай мне.",
+      "audio_url": null
+    }
+  ],
+  "steps": [
+    {
+      "sort_order": 1,
+      "scene": 1,
+      "scene_title": "Знакомство с буквами",
+      "step_type": "multiple_choice",
+      "prompt": "Какие буквы есть в кыргызском, но обычно нет в русском алфавите?",
+      "instruction": "Выбери все особые буквы.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "multiple",
+        "choices": [
+          { "text": "Ө", "is_correct": true, "sort_order": 1 },
+          { "text": "Ү", "is_correct": true, "sort_order": 2 },
+          { "text": "Ң", "is_correct": true, "sort_order": 3 },
+          { "text": "Ф", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 2,
+      "scene": 1,
+      "scene_title": "Знакомство с буквами",
+      "step_type": "multiple_choice",
+      "prompt": "Какая это буква: Ө ?",
+      "instruction": "Посмотри внимательно на букву и выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "О", "is_correct": false, "sort_order": 1 },
+          { "text": "Ө", "is_correct": true, "sort_order": 2 },
+          { "text": "У", "is_correct": false, "sort_order": 3 },
+          { "text": "Ү", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 3,
+      "scene": 1,
+      "scene_title": "Знакомство с буквами",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори звук и букву: Ө",
+      "instruction": "Слушай и повтори. Не торопись.",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "Ө",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 4,
+      "scene": 2,
+      "scene_title": "Узнаём слова с Ө",
+      "step_type": "match_pairs",
+      "prompt": "Соедини слова с переводами.",
+      "instruction": "Сопоставь кыргызские слова и русские значения.",
+      "xp_reward": 10,
+      "data": {
+        "pairs": [
+          { "left_text": "көл", "right_text": "озеро", "sort_order": 1 },
+          { "left_text": "өрүк", "right_text": "абрикос", "sort_order": 2 },
+          { "left_text": "өчүр", "right_text": "выключи", "sort_order": 3 }
+        ]
+      }
+    },
+    {
+      "sort_order": 5,
+      "scene": 2,
+      "scene_title": "Узнаём слова с Ө",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово ты слышишь?",
+      "instruction": "Прослушай аудио и выбери слово.",
+      "xp_reward": 10,
+      "data": {
+        "audio_text_hint": "көл",
+        "selection_mode": "single",
+        "choices": [
+          { "text": "кол", "is_correct": false, "sort_order": 1 },
+          { "text": "көл", "is_correct": true, "sort_order": 2 },
+          { "text": "күн", "is_correct": false, "sort_order": 3 },
+          { "text": "гүл", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 6,
+      "scene": 2,
+      "scene_title": "Узнаём слова с Ө",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слово: көл",
+      "instruction": "Обрати внимание: это не «кол», а «көл».",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "көл",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 7,
+      "scene": 3,
+      "scene_title": "Узнаём слова с Ү",
+      "step_type": "match_pairs",
+      "prompt": "Соедини слова и переводы.",
+      "instruction": "Сопоставь кыргызские слова и русские значения.",
+      "xp_reward": 10,
+      "data": {
+        "pairs": [
+          { "left_text": "күн", "right_text": "день / солнце", "sort_order": 1 },
+          { "left_text": "гүл", "right_text": "цветок", "sort_order": 2 },
+          { "left_text": "үч", "right_text": "три", "sort_order": 3 }
+        ]
+      }
+    },
+    {
+      "sort_order": 8,
+      "scene": 3,
+      "scene_title": "Узнаём слова с Ү",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово ты слышишь?",
+      "instruction": "Прослушай и выбери правильное слово.",
+      "xp_reward": 10,
+      "data": {
+        "audio_text_hint": "гүл",
+        "selection_mode": "single",
+        "choices": [
+          { "text": "гул", "is_correct": false, "sort_order": 1 },
+          { "text": "гүл", "is_correct": true, "sort_order": 2 },
+          { "text": "көл", "is_correct": false, "sort_order": 3 },
+          { "text": "үч", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 9,
+      "scene": 3,
+      "scene_title": "Узнаём слова с Ү",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слово: гүл",
+      "instruction": "Губы округляются, но звук не как русский «у».",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "гүл",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 10,
+      "scene": 4,
+      "scene_title": "Узнаём слова с Ң",
+      "step_type": "match_pairs",
+      "prompt": "Соедини слова с переводами.",
+      "instruction": "Сопоставь кыргызские слова и русские значения.",
+      "xp_reward": 10,
+      "data": {
+        "pairs": [
+          { "left_text": "жаңы", "right_text": "новый", "sort_order": 1 },
+          { "left_text": "оң", "right_text": "правый / правильный", "sort_order": 2 },
+          { "left_text": "мага", "right_text": "мне", "sort_order": 3 }
+        ]
+      }
+    },
+    {
+      "sort_order": 11,
+      "scene": 4,
+      "scene_title": "Узнаём слова с Ң",
+      "step_type": "multiple_choice",
+      "prompt": "Выбери правильное написание слова «новый» по-кыргызски.",
+      "instruction": "Обрати внимание на букву Ң.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "жаны", "is_correct": false, "sort_order": 1 },
+          { "text": "жаңы", "is_correct": true, "sort_order": 2 },
+          { "text": "жану", "is_correct": false, "sort_order": 3 },
+          { "text": "жаңыы", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 12,
+      "scene": 4,
+      "scene_title": "Узнаём слова с Ң",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слово: жаңы",
+      "instruction": "Не говори «жа-ны». Это один носовой звук: ң.",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "жаңы",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 13,
+      "scene": 5,
+      "scene_title": "Сравниваем похожие звуки",
+      "step_type": "multiple_choice",
+      "prompt": "Где есть кыргызская буква Ө?",
+      "instruction": "Найди слово с буквой Ө.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "от", "is_correct": false, "sort_order": 1 },
+          { "text": "өрүк", "is_correct": true, "sort_order": 2 },
+          { "text": "ооба", "is_correct": false, "sort_order": 3 },
+          { "text": "бала", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 14,
+      "scene": 5,
+      "scene_title": "Сравниваем похожие звуки",
+      "step_type": "multiple_choice",
+      "prompt": "Где есть кыргызская буква Ү?",
+      "instruction": "Выбери слово с буквой Ү.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "күн", "is_correct": true, "sort_order": 1 },
+          { "text": "кун", "is_correct": false, "sort_order": 2 },
+          { "text": "бала", "is_correct": false, "sort_order": 3 },
+          { "text": "нан", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 15,
+      "scene": 5,
+      "scene_title": "Сравниваем похожие звуки",
+      "step_type": "fill_blank",
+      "prompt": "Вставь пропущенную букву: жа_ы",
+      "instruction": "Какая буква пропущена?",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "жаңы",
+        "sentence_template": "жа[[blank]]ы",
+        "acceptable_answers": ["ң"]
+      }
+    },
+    {
+      "sort_order": 16,
+      "scene": 6,
+      "scene_title": "Говорим короткие полезные фразы",
+      "step_type": "reorder_sentence",
+      "prompt": "Собери фразу: «дай мне цветок».",
+      "instruction": "Поставь слова в правильном порядке.",
+      "xp_reward": 10,
+      "data": {
+        "tokens": [
+          { "text": "мага", "is_distractor": false, "sort_order": 1 },
+          { "text": "гүл", "is_distractor": false, "sort_order": 2 },
+          { "text": "бер", "is_distractor": false, "sort_order": 3 }
+        ],
+        "correct_sentence": "мага гүл бер"
+      }
+    },
+    {
+      "sort_order": 17,
+      "scene": 6,
+      "scene_title": "Говорим короткие полезные фразы",
+      "step_type": "type_translation",
+      "prompt": "Переведи на кыргызский: Новый цветок",
+      "instruction": "Напечатай перевод на кыргызском.",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "Новый цветок",
+        "acceptable_answers": ["жаңы гүл"]
+      }
+    },
+    {
+      "sort_order": 18,
+      "scene": 6,
+      "scene_title": "Говорим короткие полезные фразы",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори фразу: жаңы гүл",
+      "instruction": "Скажи чётко. Обрати внимание на Ң в слове «жаңы».",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "жаңы гүл",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 19,
+      "scene": 7,
+      "scene_title": "Финальное закрепление",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово означает «три»?",
+      "instruction": "Выбери правильный перевод.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "күн", "is_correct": false, "sort_order": 1 },
+          { "text": "үч", "is_correct": true, "sort_order": 2 },
+          { "text": "көл", "is_correct": false, "sort_order": 3 },
+          { "text": "жаңы", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 20,
+      "scene": 7,
+      "scene_title": "Финальное закрепление",
+      "step_type": "fill_blank",
+      "prompt": "Вставь пропущенную букву: г_л",
+      "instruction": "Впиши букву.",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "гүл",
+        "sentence_template": "г[[blank]]л",
+        "acceptable_answers": ["ү"]
+      }
+    },
+    {
+      "sort_order": 21,
+      "scene": 7,
+      "scene_title": "Финальное закрепление",
+      "step_type": "multiple_choice",
+      "prompt": "В каком слове есть буква Ң?",
+      "instruction": "Это последний вопрос. Выбери внимательно.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "жаңы", "is_correct": true, "sort_order": 1 },
+          { "text": "гүл", "is_correct": false, "sort_order": 2 },
+          { "text": "көл", "is_correct": false, "sort_order": 3 },
+          { "text": "үч", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    }
+  ]
+}

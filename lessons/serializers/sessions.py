@@ -100,7 +100,7 @@ class SpeechSubmissionStatusSerializer(serializers.ModelSerializer):
 class ReviewItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReviewItem
-        fields = ['id', 'item_type', 'target_text', 'translation_ky', 'due_at', 'strength', 'is_completed']
+        fields = ['id', 'item_type', 'target_text', 'translation_ky', 'due_at', 'strength', 'correct_streak', 'is_completed']
 
 
 class SkillProgressSerializer(serializers.ModelSerializer):
@@ -128,10 +128,28 @@ class CourseSummarySerializer(serializers.ModelSerializer):
     categories = serializers.SerializerMethodField()
     skills = serializers.SerializerMethodField()
     enrolled_at = serializers.DateTimeField(source='started_at', read_only=True)
+    streak = serializers.SerializerMethodField()
+    total_xp = serializers.SerializerMethodField()
+    hearts_remaining = serializers.SerializerMethodField()
+    course_title = serializers.CharField(source='course.title', read_only=True)
 
     class Meta:
         model = CourseEnrollment
-        fields = ['course_id', 'is_active', 'enrolled_at', 'categories', 'skills']
+        fields = ['course_id', 'course_title', 'is_active', 'enrolled_at', 'categories', 'skills', 'streak', 'total_xp', 'hearts_remaining']
+
+    def get_streak(self, obj):
+        return obj.user.streak
+
+    def get_total_xp(self, obj):
+        from ..models.progress import UserLessonProgress
+        agg = UserLessonProgress.objects.filter(user=obj.user, lesson__category__course=obj.course).aggregate(total=models.Sum('total_xp_earned'))
+        return agg['total'] or 0
+
+    def get_hearts_remaining(self, obj):
+        # This is a bit arbitrary if hearts are global, but let's say they are 5 for now 
+        # or we could pick the last active session's hearts
+        last_session = LessonSession.objects.filter(user=obj.user, lesson__category__course=obj.course).order_by('-started_at').first()
+        return last_session.hearts_remaining if last_session else 5
 
     def get_categories(self, obj):
         from ..models.progress import UserCategoryProgress

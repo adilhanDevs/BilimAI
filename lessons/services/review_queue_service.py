@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.utils import timezone
 from ..models.progress import UserContentProgress, ReviewItem
 from ..models.course import LessonVocabulary
@@ -41,6 +42,44 @@ class ReviewQueueService:
                 is_completed=True,
                 strength=content_progress.mastery_score
             )
+
+    @staticmethod
+    def resolve_review_item(review_item: ReviewItem):
+        """
+        Implements SRS-lite logic for a successful review.
+        """
+        now = timezone.now()
+        review_item.correct_streak += 1
+        review_item.last_reviewed_at = now
+        
+        # SRS-lite Intervals: 1 day, 3 days, 7 days, 14 days...
+        if review_item.correct_streak == 1:
+            interval = timedelta(days=1)
+        elif review_item.correct_streak == 2:
+            interval = timedelta(days=3)
+        elif review_item.correct_streak == 3:
+            interval = timedelta(days=7)
+        else:
+            interval = timedelta(days=14)
+            
+        review_item.due_at = now + interval
+        
+        # If streak is high enough (e.g. 4), we could mark as completed
+        # but for now let's just keep it in the loop with long intervals.
+        if review_item.correct_streak >= 4:
+            review_item.is_completed = True
+            
+        review_item.save()
+
+    @staticmethod
+    def record_mistake(review_item: ReviewItem):
+        """
+        Handles a mistake during review: reset streak and schedule soon.
+        """
+        review_item.correct_streak = 0
+        review_item.mistake_count += 1
+        review_item.due_at = timezone.now() + timedelta(hours=4)
+        review_item.save()
 
     @staticmethod
     def link_vocabulary_to_unit(vocabulary: LessonVocabulary, content_unit_id: str):

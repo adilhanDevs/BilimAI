@@ -141,17 +141,26 @@ class ReviewQueueViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Only show items due now or in the past
+        from django.utils import timezone
         return ReviewItem.objects.filter(
             user=self.request.user, 
-            is_completed=False
+            is_completed=False,
+            due_at__lte=timezone.now()
         ).order_by('due_at')
 
     @action(detail=True, methods=['post'])
     def resolve(self, request, pk=None):
         instance = self.get_object()
-        instance.is_completed = True
-        instance.save()
-        return Response({"status": "resolved"})
+        from .services.review_queue_service import ReviewQueueService
+        
+        is_correct = request.data.get('is_correct', True)
+        if is_correct:
+            ReviewQueueService.resolve_review_item(instance)
+        else:
+            ReviewQueueService.record_mistake(instance)
+            
+        return Response({"status": "updated", "is_completed": instance.is_completed})
 
 
 class UserProgressViewSet(viewsets.ReadOnlyModelViewSet):
