@@ -240,14 +240,14 @@ class CategoryAdmin(admin.ModelAdmin):
 class UserLessonProgressAdmin(admin.ModelAdmin):
     list_display = ('user', 'lesson', 'status', 'best_score', 'last_activity_at')
     list_filter = ('status', 'lesson__category')
-    search_fields = ('user__username', 'user__email', 'lesson__title')
+    search_fields = ('user__nickname', 'user__email', 'lesson__title')
     readonly_fields = ('id', 'last_activity_at')
 
 @admin.register(ReviewItem)
 class ReviewItemAdmin(admin.ModelAdmin):
     list_display = ('user', 'item_type', 'target_text', 'due_at', 'is_completed')
     list_filter = ('item_type', 'is_completed')
-    search_fields = ('user__username', 'target_text')
+    search_fields = ('user__nickname', 'target_text')
 
 # Register remaining basic models
 admin.site.register(CourseEnrollment)

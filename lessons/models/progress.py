@@ -27,7 +27,7 @@ class LessonSession(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"Session {self.id} - {self.user.username} - {self.lesson.title}"
+        return f"Session {self.id} - {self.user.nickname} - {self.lesson.title}"
 
     @property
     def is_failed(self):
