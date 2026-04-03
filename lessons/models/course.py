@@ -19,7 +19,7 @@ class Course(models.Model):
         ordering = ['created_at']
 
     def __str__(self):
-        return self.title
+        return str(self.title or "Unnamed Course")
 
 
 class Unit(models.Model):
@@ -38,7 +38,7 @@ class Unit(models.Model):
         unique_together = ('course', 'slug')
 
     def __str__(self):
-        return f"{self.course.title} - {self.title}"
+        return str(f"{getattr(self.course, 'title', '')} - {self.title}")
 
 
 class Category(models.Model):
@@ -89,7 +89,7 @@ class Lesson(models.Model):
         ordering = ['sort_order']
 
     def __str__(self):
-        return self.title
+        return str(self.title or "Unnamed Lesson")
 
 
 class LessonVocabulary(models.Model):
@@ -111,4 +111,4 @@ class LessonVocabulary(models.Model):
         verbose_name_plural = "Lesson vocabularies"
 
     def __str__(self):
-        return f"{self.word_or_phrase_target} ({self.lesson.title})"
+        return str(f"{self.word_or_phrase_target} ({getattr(self.lesson, 'title', '')})")
