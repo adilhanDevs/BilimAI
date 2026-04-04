@@ -1,0 +1,462 @@
+{
+  "course": {
+    "slug": "ky-for-ru",
+    "title": "Кыргызский для русскоговорящих",
+    "source_language": "ru",
+    "target_language": "ky",
+    "cefr_min": "A0",
+    "cefr_max": "B1",
+    "description_ky": "Орус тилдүү колдонуучулар үчүн кыргыз тили курсу."
+  },
+  "category": {
+    "slug": "alphabet-and-sounds",
+    "title_ky": "Алфавит жана тыбыштар",
+    "title_target": "Алфавит и звуки",
+    "description_ky": "Кыргыз тилиндеги өзгөчө тамгаларды жана тыбыштарды үйрөнүү.",
+    "sort_order": 1,
+    "estimated_minutes": 60,
+    "vocabulary_count": 30
+  },
+  "lesson": {
+    "slug": "letter-ng-in-words",
+    "title": "Буква Ң в словах и произношении",
+    "subtitle": "Учимся слышать и говорить ң",
+    "description_ky": "Ң тамгасын туура угуу жана айтуу боюнча сабак.",
+    "level": "A0",
+    "difficulty": "beginner",
+    "duration_min": 10,
+    "xp_reward": 210,
+    "grammar_focus": "Фонетика: звук ң",
+    "sort_order": 3
+  },
+  "vocabulary": [
+    {
+      "sort_order": 1,
+      "word_or_phrase_target": "жаңы",
+      "translation_ky": "новый",
+      "transliteration": "jaŋy",
+      "part_of_speech": "adjective",
+      "example_target": "Бул жаңы китеп.",
+      "example_ky": "Это новая книга.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 2,
+      "word_or_phrase_target": "жаны",
+      "translation_ky": "душа",
+      "transliteration": "jany",
+      "part_of_speech": "noun",
+      "example_target": "Анын жаны таза.",
+      "example_ky": "У него чистая душа.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 3,
+      "word_or_phrase_target": "оң",
+      "translation_ky": "правый",
+      "transliteration": "oŋ",
+      "part_of_speech": "adjective",
+      "example_target": "Оң кол.",
+      "example_ky": "Правая рука.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 4,
+      "word_or_phrase_target": "он",
+      "translation_ky": "десять",
+      "transliteration": "on",
+      "part_of_speech": "numeral",
+      "example_target": "Он адам.",
+      "example_ky": "Десять человек.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 5,
+      "word_or_phrase_target": "миң",
+      "translation_ky": "тысяча",
+      "transliteration": "miŋ",
+      "part_of_speech": "numeral",
+      "example_target": "Миң сом.",
+      "example_ky": "Тысяча сом.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 6,
+      "word_or_phrase_target": "кең",
+      "translation_ky": "широкий",
+      "transliteration": "keŋ",
+      "part_of_speech": "adjective",
+      "example_target": "Жол кең.",
+      "example_ky": "Дорога широкая.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 7,
+      "word_or_phrase_target": "таң",
+      "translation_ky": "рассвет",
+      "transliteration": "taŋ",
+      "part_of_speech": "noun",
+      "example_target": "Таң атат.",
+      "example_ky": "Наступает рассвет.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 8,
+      "word_or_phrase_target": "нан",
+      "translation_ky": "хлеб",
+      "transliteration": "nan",
+      "part_of_speech": "noun",
+      "example_target": "Нан бар.",
+      "example_ky": "Есть хлеб.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 9,
+      "word_or_phrase_target": "мен",
+      "translation_ky": "я",
+      "transliteration": "men",
+      "part_of_speech": "pronoun",
+      "example_target": "Мен келдим.",
+      "example_ky": "Я пришёл.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 10,
+      "word_or_phrase_target": "сен",
+      "translation_ky": "ты",
+      "transliteration": "sen",
+      "part_of_speech": "pronoun",
+      "example_target": "Сен келдиң.",
+      "example_ky": "Ты пришёл.",
+      "audio_url": null
+    }
+  ],
+  "steps": [
+    {
+      "sort_order": 1,
+      "scene": 1,
+      "scene_title": "Знакомство с ң",
+      "step_type": "multiple_choice",
+      "prompt": "Какая это буква: ң",
+      "instruction": "Выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "н", "is_correct": false, "sort_order": 1 },
+          { "text": "ң", "is_correct": true, "sort_order": 2 },
+          { "text": "г", "is_correct": false, "sort_order": 3 }
+        ]
+      }
+    },
+    {
+      "sort_order": 2,
+      "scene": 1,
+      "scene_title": "Знакомство с ң",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори звук: ң",
+      "instruction": "Это носовой звук, не «н».",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "ң",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 3,
+      "scene": 1,
+      "scene_title": "Знакомство с ң",
+      "step_type": "multiple_choice",
+      "prompt": "Где есть буква ң?",
+      "instruction": "Выбери слово.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "нан", "is_correct": false, "sort_order": 1 },
+          { "text": "жаңы", "is_correct": true, "sort_order": 2 }
+        ]
+      }
+    },
+
+    {
+      "sort_order": 4,
+      "scene": 2,
+      "scene_title": "ң в конце слова",
+      "step_type": "match_pairs",
+      "prompt": "Соедини слова и перевод.",
+      "instruction": "Обрати внимание на ң в конце.",
+      "xp_reward": 10,
+      "data": {
+        "pairs": [
+          { "left_text": "оң", "right_text": "правый", "sort_order": 1 },
+          { "left_text": "миң", "right_text": "тысяча", "sort_order": 2 },
+          { "left_text": "кең", "right_text": "широкий", "sort_order": 3 }
+        ]
+      }
+    },
+    {
+      "sort_order": 5,
+      "scene": 2,
+      "scene_title": "ң в конце слова",
+      "step_type": "fill_blank",
+      "prompt": "Вставь букву: ми_",
+      "instruction": "Нужно получить слово «тысяча».",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "миң",
+        "sentence_template": "ми[[blank]]",
+        "acceptable_answers": ["ң"]
+      }
+    },
+    {
+      "sort_order": 6,
+      "scene": 2,
+      "scene_title": "ң в конце слова",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слово: миң",
+      "instruction": "Чётко произнеси ң в конце.",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "миң",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+
+    {
+      "sort_order": 7,
+      "scene": 3,
+      "scene_title": "ң в середине слова",
+      "step_type": "multiple_choice",
+      "prompt": "Где есть ң?",
+      "instruction": "Выбери слово.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "жаны", "is_correct": false, "sort_order": 1 },
+          { "text": "жаңы", "is_correct": true, "sort_order": 2 }
+        ]
+      }
+    },
+    {
+      "sort_order": 8,
+      "scene": 3,
+      "scene_title": "ң в середине слова",
+      "step_type": "fill_blank",
+      "prompt": "Вставь букву: жа_ы",
+      "instruction": "Нужно получить слово «новый».",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "жаңы",
+        "sentence_template": "жа[[blank]]ы",
+        "acceptable_answers": ["ң"]
+      }
+    },
+    {
+      "sort_order": 9,
+      "scene": 3,
+      "scene_title": "ң в середине слова",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слово: жаңы",
+      "instruction": "Это один звук, не «н».",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "жаңы",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+
+    {
+      "sort_order": 10,
+      "scene": 4,
+      "scene_title": "сравнение ң и н",
+      "step_type": "match_pairs",
+      "prompt": "Соедини слова и значения.",
+      "instruction": "Не путай ң и н.",
+      "xp_reward": 10,
+      "data": {
+        "pairs": [
+          { "left_text": "жаны", "right_text": "душа", "sort_order": 1 },
+          { "left_text": "жаңы", "right_text": "новый", "sort_order": 2 },
+          { "left_text": "он", "right_text": "десять", "sort_order": 3 },
+          { "left_text": "оң", "right_text": "правый", "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 11,
+      "scene": 4,
+      "scene_title": "сравнение ң и н",
+      "step_type": "multiple_choice",
+      "prompt": "Что значит «жаңы»?",
+      "instruction": "Выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "душа", "is_correct": false, "sort_order": 1 },
+          { "text": "новый", "is_correct": true, "sort_order": 2 }
+        ]
+      }
+    },
+    {
+      "sort_order": 12,
+      "scene": 4,
+      "scene_title": "сравнение ң и н",
+      "step_type": "type_translation",
+      "prompt": "Переведи: правый",
+      "instruction": "Напечатай слово.",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "правый",
+        "acceptable_answers": ["оң"]
+      }
+    },
+
+    {
+      "sort_order": 13,
+      "scene": 5,
+      "scene_title": "слух",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово ты слышишь? (жаңы)",
+      "instruction": "Выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "жаны", "is_correct": false, "sort_order": 1 },
+          { "text": "жаңы", "is_correct": true, "sort_order": 2 }
+        ]
+      }
+    },
+    {
+      "sort_order": 14,
+      "scene": 5,
+      "scene_title": "слух",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово ты слышишь? (оң)",
+      "instruction": "Выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "он", "is_correct": false, "sort_order": 1 },
+          { "text": "оң", "is_correct": true, "sort_order": 2 }
+        ]
+      }
+    },
+    {
+      "sort_order": 15,
+      "scene": 5,
+      "scene_title": "слух",
+      "step_type": "fill_blank",
+      "prompt": "Вставь букву: о_",
+      "instruction": "Нужно получить «правый».",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "оң",
+        "sentence_template": "о[[blank]]",
+        "acceptable_answers": ["ң"]
+      }
+    },
+
+    {
+      "sort_order": 16,
+      "scene": 6,
+      "scene_title": "повторение",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори: оң кол",
+      "instruction": "Скажи фразу полностью.",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "оң кол",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 17,
+      "scene": 6,
+      "scene_title": "повторение",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори: жаңы китеп",
+      "instruction": "Чётко произнеси ң.",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "жаңы китеп",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 18,
+      "scene": 6,
+      "scene_title": "повторение",
+      "step_type": "reorder_sentence",
+      "prompt": "Собери: «это новый дом»",
+      "instruction": "Поставь слова в правильном порядке.",
+      "xp_reward": 10,
+      "data": {
+        "tokens": [
+          { "text": "бул", "is_distractor": false, "sort_order": 1 },
+          { "text": "жаңы", "is_distractor": false, "sort_order": 2 },
+          { "text": "үй", "is_distractor": false, "sort_order": 3 }
+        ],
+        "correct_sentence": "бул жаңы үй"
+      }
+    },
+
+    {
+      "sort_order": 19,
+      "scene": 7,
+      "scene_title": "финал",
+      "step_type": "multiple_choice",
+      "prompt": "Где есть ң?",
+      "instruction": "Выбери слово.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "жаны", "is_correct": false, "sort_order": 1 },
+          { "text": "жаңы", "is_correct": true, "sort_order": 2 }
+        ]
+      }
+    },
+    {
+      "sort_order": 20,
+      "scene": 7,
+      "scene_title": "финал",
+      "step_type": "type_translation",
+      "prompt": "Переведи: тысяча",
+      "instruction": "Напечатай слово.",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "тысяча",
+        "acceptable_answers": ["миң"]
+      }
+    },
+    {
+      "sort_order": 21,
+      "scene": 7,
+      "scene_title": "финал",
+      "step_type": "fill_blank",
+      "prompt": "Вставь букву: жа_ы",
+      "instruction": "Последний вопрос.",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "жаңы",
+        "sentence_template": "жа[[blank]]ы",
+        "acceptable_answers": ["ң"]
+      }
+    }
+  ]
+}

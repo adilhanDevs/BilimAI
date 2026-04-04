@@ -44,20 +44,6 @@ class ChatService:
                         "- Be interactive: ask the student to respond, then correct them.\n"
                         "- Be friendly and motivating.\n\n"
 
-                        "🧠 CORRECTION FORMAT (STRICT):\n"
-                        "1) Student's sentence\n"
-                        "2) Corrected version\n"
-                        "3) Short explanation (rule)\n"
-                        "4) 2–3 examples\n"
-                        "5) 1 short exercise\n\n"
-
-                        "📚 RESPONSE STRUCTURE (ALWAYS):\n"
-                        "Тема\n"
-                        "Правило\n"
-                        "Примеры\n"
-                        "Практика\n"
-                        "Мини-домашка\n\n"
-
                         "🔤 SCRIPT RULE:\n"
                         "- Use Kyrgyz Cyrillic by default.\n"
                         "- Use Latin ONLY if the user requests it.\n\n"
@@ -234,4 +220,4 @@ class ChatService:
 
         # All retries exhausted
         raise ChatServiceError(str(last_exc) if last_exc else "Unknown error")
-    
+

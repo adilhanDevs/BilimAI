@@ -1,22 +1,41 @@
 """
-Django settings for BilimAI.
+Django settings for BilimAI project.
 """
 
 import os
 import importlib.util
 from datetime import timedelta
 from pathlib import Path
-
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Загружаем .env файл
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-dev-only-change-me")
+
 DEBUG = os.environ.get("DEBUG", "true").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = ["adilhan.pythonanywhere.com", "bilimai-prod.netlify.app", "localhost", "127.0.0.1"]
+# === ALLOWED_HOSTS и CSRF_TRUSTED_ORIGINS через .env ===
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get(
+        "ALLOWED_HOSTS", "adilhan.pythonanywhere.com,localhost,127.0.0.1"
+    ).split(",")
+    if h.strip()
+]
 
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get(
+        "CSRF_TRUSTED_ORIGINS",
+        "https://adilhan.pythonanywhere.com,https://bilimai-prod.netlify.app",
+    ).split(",")
+    if o.strip()
+]
+
+# Проверка наличия WhiteNoise
 HAS_WHITENOISE = importlib.util.find_spec("whitenoise") is not None
 
 INSTALLED_APPS = [
@@ -68,6 +87,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "BilimAI.wsgi.application"
 
+# ====================== DATABASE ======================
 USE_POSTGRES = os.environ.get("USE_POSTGRES", "false").lower() in ("1", "true", "yes")
 
 if USE_POSTGRES:
@@ -89,6 +109,7 @@ else:
         }
     }
 
+# ====================== AUTH & SECURITY ======================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -101,29 +122,30 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+# ====================== STATIC & MEDIA ======================
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://adilhan.pythonanywhere.com",
-]
-
-# WhiteNoise only in production (or when DEBUG=False)
+# WhiteNoise настройка
 if HAS_WHITENOISE and not DEBUG:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 else:
-    # В разработке используем стандартный storage Django
     STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-    # Опционально: можно добавить папку static, если у тебя есть свои статические файлы
-    # STATICFILES_DIRS = [BASE_DIR / "static"]
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# ====================== CORS ======================
+CORS_ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get(
+        "CORS_ALLOWED_ORIGINS",
+        "https://adilhan.pythonanywhere.com,https://bilimai-prod.netlify.app,http://localhost:3000",
+    ).split(",")
+    if o.strip()
+]
 
-AUTH_USER_MODEL = "users.User"
-
+# ====================== CACHE ======================
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -131,8 +153,7 @@ CACHES = {
     }
 }
 
-# Redis is intentionally not used in this project configuration.
-# Celery defaults to in-memory transport/backend unless explicitly overridden.
+# ====================== CELERY ======================
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "memory://")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "cache+memory://")
 CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "true").lower() in ("1", "true", "yes")
@@ -141,6 +162,7 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 
+# ====================== REST FRAMEWORK ======================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -154,18 +176,21 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "60/minute", "user": "1000/minute"},
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/minute",
+        "user": "1000/minute",
+    },
 }
 
-# drf-spectacular settings
+# drf-spectacular
 SPECTACULAR_SETTINGS = {
     "TITLE": "BilimAI API",
     "DESCRIPTION": "BilimAI REST API",
     "VERSION": "1.0.0",
-    # Add authentication schemes automatically
     "SCHEMA_PATH_PREFIX": "/api",
 }
 
+# SimpleJWT
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -173,23 +198,15 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
-CORS_ALLOWED_ORIGINS = [
-    o.strip()
-    for o in os.environ.get(
-        "CORS_ALLOWED_ORIGINS",
-        "https://adilhan.pythonanywhere.com,https://bilimai-prod.netlify.app,http://localhost:3000",
-    ).split(",")
-    if o.strip()
-]
-
+# ====================== AI SETTINGS ======================
 PENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "")
 OPENAI_API_URL = os.environ.get(
-    "OPENAI_API_URL",
-    "https://router.huggingface.co/v1/chat/completions",
+    "OPENAI_API_URL", "https://router.huggingface.co/v1/chat/completions"
 )
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "openai/gpt-oss-120b")
 
+# ====================== LOGGING ======================
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -203,3 +220,6 @@ LOGGING = {
         "level": os.environ.get("LOG_LEVEL", "INFO"),
     },
 }
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTH_USER_MODEL = "users.User"

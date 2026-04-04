@@ -1,0 +1,479 @@
+{
+  "course": {
+    "slug": "ky-for-ru",
+    "title": "Кыргызский для русскоговорящих",
+    "source_language": "ru",
+    "target_language": "ky",
+    "cefr_min": "A0",
+    "cefr_max": "B1",
+    "description_ky": "Орус тилдүү колдонуучулар үчүн кыргыз тили курсу."
+  },
+  "category": {
+    "slug": "alphabet-and-sounds",
+    "title_ky": "Алфавит жана тыбыштар",
+    "title_target": "Алфавит и звуки",
+    "description_ky": "Кыргыз тилиндеги өзгөчө тамгаларды жана тыбыштарды үйрөнүү.",
+    "sort_order": 1,
+    "estimated_minutes": 60,
+    "vocabulary_count": 20
+  },
+  "lesson": {
+    "slug": "a-o-u-vs-oe-ue",
+    "title": "Буквы А, О, У vs Ө, Ү — учимся различать",
+    "subtitle": "Сравниваем похожие звуки и слова",
+    "description_ky": "О, Ө, У, Ү тамгаларын айырмалоо боюнча практикалык сабак.",
+    "level": "A0",
+    "difficulty": "beginner",
+    "duration_min": 10,
+    "xp_reward": 210,
+    "grammar_focus": "Фонетика и различение гласных: О/Ө, У/Ү",
+    "sort_order": 2
+  },
+  "vocabulary": [
+    {
+      "sort_order": 1,
+      "word_or_phrase_target": "кол",
+      "translation_ky": "рука",
+      "transliteration": "kol",
+      "part_of_speech": "noun",
+      "example_target": "Бул кол.",
+      "example_ky": "Это рука.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 2,
+      "word_or_phrase_target": "көл",
+      "translation_ky": "озеро",
+      "transliteration": "köl",
+      "part_of_speech": "noun",
+      "example_target": "Көл чоң.",
+      "example_ky": "Озеро большое.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 3,
+      "word_or_phrase_target": "гул",
+      "translation_ky": "шум",
+      "transliteration": "gul",
+      "part_of_speech": "noun",
+      "example_target": "Шаарда гул бар.",
+      "example_ky": "В городе есть шум.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 4,
+      "word_or_phrase_target": "гүл",
+      "translation_ky": "цветок",
+      "transliteration": "gül",
+      "part_of_speech": "noun",
+      "example_target": "Бул гүл кооз.",
+      "example_ky": "Этот цветок красивый.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 5,
+      "word_or_phrase_target": "уч",
+      "translation_ky": "лети",
+      "transliteration": "uch",
+      "part_of_speech": "verb",
+      "example_target": "Бийик уч.",
+      "example_ky": "Лети высоко.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 6,
+      "word_or_phrase_target": "үч",
+      "translation_ky": "три",
+      "transliteration": "üch",
+      "part_of_speech": "numeral",
+      "example_target": "Үч алма бар.",
+      "example_ky": "Есть три яблока.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 7,
+      "word_or_phrase_target": "отуз",
+      "translation_ky": "тридцать",
+      "transliteration": "otuz",
+      "part_of_speech": "numeral",
+      "example_target": "Отуз күн.",
+      "example_ky": "Тридцать дней.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 8,
+      "word_or_phrase_target": "өт",
+      "translation_ky": "проходи",
+      "transliteration": "öt",
+      "part_of_speech": "verb",
+      "example_target": "Ичке өт.",
+      "example_ky": "Проходи внутрь.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 9,
+      "word_or_phrase_target": "узун",
+      "translation_ky": "длинный",
+      "transliteration": "uzun",
+      "part_of_speech": "adjective",
+      "example_target": "Жол узун.",
+      "example_ky": "Дорога длинная.",
+      "audio_url": null
+    },
+    {
+      "sort_order": 10,
+      "word_or_phrase_target": "үз",
+      "translation_ky": "сорви / отрежь",
+      "transliteration": "üz",
+      "part_of_speech": "verb",
+      "example_target": "Гүлдү үз.",
+      "example_ky": "Сорви цветок.",
+      "audio_url": null
+    }
+  ],
+  "steps": [
+    {
+      "sort_order": 1,
+      "scene": 1,
+      "scene_title": "Почему одна буква меняет смысл",
+      "step_type": "match_pairs",
+      "prompt": "Соедини похожие слова с разными значениями.",
+      "instruction": "Посмотри, как одна буква меняет смысл слова.",
+      "xp_reward": 10,
+      "data": {
+        "pairs": [
+          { "left_text": "кол", "right_text": "рука", "sort_order": 1 },
+          { "left_text": "көл", "right_text": "озеро", "sort_order": 2 },
+          { "left_text": "гул", "right_text": "шум", "sort_order": 3 },
+          { "left_text": "гүл", "right_text": "цветок", "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 2,
+      "scene": 1,
+      "scene_title": "Почему одна буква меняет смысл",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово означает «озеро»?",
+      "instruction": "Выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "кол", "is_correct": false, "sort_order": 1 },
+          { "text": "көл", "is_correct": true, "sort_order": 2 },
+          { "text": "гүл", "is_correct": false, "sort_order": 3 },
+          { "text": "уч", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 3,
+      "scene": 1,
+      "scene_title": "Почему одна буква меняет смысл",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори пару слов: кол — көл",
+      "instruction": "Скажи оба слова и почувствуй разницу.",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "кол көл",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+
+    {
+      "sort_order": 4,
+      "scene": 2,
+      "scene_title": "Сравнение О и Ө",
+      "step_type": "multiple_choice",
+      "prompt": "Где есть буква Ө?",
+      "instruction": "Выбери слово с буквой Ө.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "отуз", "is_correct": false, "sort_order": 1 },
+          { "text": "көл", "is_correct": true, "sort_order": 2 },
+          { "text": "кол", "is_correct": false, "sort_order": 3 },
+          { "text": "узун", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 5,
+      "scene": 2,
+      "scene_title": "Сравнение О и Ө",
+      "step_type": "fill_blank",
+      "prompt": "Вставь пропущенную букву: к_л",
+      "instruction": "Нужно получить слово «озеро».",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "көл",
+        "sentence_template": "к[[blank]]л",
+        "acceptable_answers": ["ө"]
+      }
+    },
+    {
+      "sort_order": 6,
+      "scene": 2,
+      "scene_title": "Сравнение О и Ө",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слово: көл",
+      "instruction": "Не говори «кол». Скажи мягче: «көл».",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "көл",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+
+    {
+      "sort_order": 7,
+      "scene": 3,
+      "scene_title": "Сравнение У и Ү",
+      "step_type": "multiple_choice",
+      "prompt": "Где есть буква Ү?",
+      "instruction": "Выбери слово с буквой Ү.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "гул", "is_correct": false, "sort_order": 1 },
+          { "text": "гүл", "is_correct": true, "sort_order": 2 },
+          { "text": "узун", "is_correct": false, "sort_order": 3 },
+          { "text": "уч", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 8,
+      "scene": 3,
+      "scene_title": "Сравнение У и Ү",
+      "step_type": "fill_blank",
+      "prompt": "Вставь пропущенную букву: г_л",
+      "instruction": "Нужно получить слово «цветок».",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "гүл",
+        "sentence_template": "г[[blank]]л",
+        "acceptable_answers": ["ү"]
+      }
+    },
+    {
+      "sort_order": 9,
+      "scene": 3,
+      "scene_title": "Сравнение У и Ү",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слово: гүл",
+      "instruction": "Губы округлены, но это не русский звук «у».",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "гүл",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+
+    {
+      "sort_order": 10,
+      "scene": 4,
+      "scene_title": "Чтение минимальных пар",
+      "step_type": "match_pairs",
+      "prompt": "Соедини слово и перевод.",
+      "instruction": "Похожие слова могут иметь разное значение.",
+      "xp_reward": 10,
+      "data": {
+        "pairs": [
+          { "left_text": "уч", "right_text": "лети", "sort_order": 1 },
+          { "left_text": "үч", "right_text": "три", "sort_order": 2 },
+          { "left_text": "гул", "right_text": "шум", "sort_order": 3 },
+          { "left_text": "гүл", "right_text": "цветок", "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 11,
+      "scene": 4,
+      "scene_title": "Чтение минимальных пар",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово означает «три»?",
+      "instruction": "Выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "уч", "is_correct": false, "sort_order": 1 },
+          { "text": "үч", "is_correct": true, "sort_order": 2 },
+          { "text": "узун", "is_correct": false, "sort_order": 3 },
+          { "text": "өт", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 12,
+      "scene": 4,
+      "scene_title": "Чтение минимальных пар",
+      "step_type": "type_translation",
+      "prompt": "Переведи на кыргызский: цветок",
+      "instruction": "Напечатай одно слово.",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "цветок",
+        "acceptable_answers": ["гүл"]
+      }
+    },
+
+    {
+      "sort_order": 13,
+      "scene": 5,
+      "scene_title": "Слуховое различение",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово ты слышишь?",
+      "instruction": "Представь, что в аудио звучит слово «көл». Выбери его.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "кол", "is_correct": false, "sort_order": 1 },
+          { "text": "көл", "is_correct": true, "sort_order": 2 },
+          { "text": "гүл", "is_correct": false, "sort_order": 3 },
+          { "text": "уч", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 14,
+      "scene": 5,
+      "scene_title": "Слуховое различение",
+      "step_type": "multiple_choice",
+      "prompt": "Какое слово ты слышишь?",
+      "instruction": "Представь, что в аудио звучит слово «гүл». Выбери его.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "гул", "is_correct": false, "sort_order": 1 },
+          { "text": "гүл", "is_correct": true, "sort_order": 2 },
+          { "text": "узун", "is_correct": false, "sort_order": 3 },
+          { "text": "өт", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 15,
+      "scene": 5,
+      "scene_title": "Слуховое различение",
+      "step_type": "fill_blank",
+      "prompt": "Вставь пропущенную букву: _ч",
+      "instruction": "Нужно получить слово «три».",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "үч",
+        "sentence_template": "[[blank]]ч",
+        "acceptable_answers": ["ү"]
+      }
+    },
+
+    {
+      "sort_order": 16,
+      "scene": 6,
+      "scene_title": "Повторение и произношение",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слова: гүл — гул",
+      "instruction": "Скажи оба слова и почувствуй разницу.",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "гүл гул",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 17,
+      "scene": 6,
+      "scene_title": "Повторение и произношение",
+      "step_type": "speak_phrase",
+      "prompt": "Повтори слова: үч — уч",
+      "instruction": "Одно слово значит «три», другое — «лети».",
+      "xp_reward": 10,
+      "data": {
+        "target_text": "үч уч",
+        "reference_audio": null,
+        "min_score_required": 70,
+        "allow_retry": true
+      }
+    },
+    {
+      "sort_order": 18,
+      "scene": 6,
+      "scene_title": "Повторение и произношение",
+      "step_type": "reorder_sentence",
+      "prompt": "Собери фразу: «это цветок».",
+      "instruction": "Поставь слова в правильном порядке.",
+      "xp_reward": 10,
+      "data": {
+        "tokens": [
+          { "text": "бул", "is_distractor": false, "sort_order": 1 },
+          { "text": "гүл", "is_distractor": false, "sort_order": 2 }
+        ],
+        "correct_sentence": "бул гүл"
+      }
+    },
+
+    {
+      "sort_order": 19,
+      "scene": 7,
+      "scene_title": "Финальная мини-проверка",
+      "step_type": "multiple_choice",
+      "prompt": "В каком слове есть буква Ө?",
+      "instruction": "Выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "кол", "is_correct": false, "sort_order": 1 },
+          { "text": "көл", "is_correct": true, "sort_order": 2 },
+          { "text": "уч", "is_correct": false, "sort_order": 3 },
+          { "text": "гул", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 20,
+      "scene": 7,
+      "scene_title": "Финальная мини-проверка",
+      "step_type": "multiple_choice",
+      "prompt": "В каком слове есть буква Ү?",
+      "instruction": "Выбери правильный вариант.",
+      "xp_reward": 10,
+      "data": {
+        "selection_mode": "single",
+        "choices": [
+          { "text": "гүл", "is_correct": true, "sort_order": 1 },
+          { "text": "гул", "is_correct": false, "sort_order": 2 },
+          { "text": "кол", "is_correct": false, "sort_order": 3 },
+          { "text": "отуз", "is_correct": false, "sort_order": 4 }
+        ]
+      }
+    },
+    {
+      "sort_order": 21,
+      "scene": 7,
+      "scene_title": "Финальная мини-проверка",
+      "step_type": "type_translation",
+      "prompt": "Переведи на кыргызский: озеро",
+      "instruction": "Напечатай одно слово.",
+      "xp_reward": 10,
+      "data": {
+        "source_text": "озеро",
+        "acceptable_answers": ["көл"]
+      }
+    }
+  ]
+}
