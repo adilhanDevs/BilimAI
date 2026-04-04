@@ -80,11 +80,14 @@ class ApiContractTests(APITestCase):
         self.assertIn('skills', course_sum)
 
     def test_review_queue_contract(self):
+        from django.utils import timezone
+        import datetime
         ReviewItem.objects.create(
             user=self.user,
             item_type='manual',
             target_text='Review me',
-            is_completed=False
+            is_completed=False,
+            due_at=timezone.now() - datetime.timedelta(days=1)
         )
         url = '/api/reviews/'
         response = self.client.get(url)

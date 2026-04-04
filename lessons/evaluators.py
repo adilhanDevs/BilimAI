@@ -1,6 +1,13 @@
+import re
+import string
+import logging
+import time
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from .utils.text_utils import normalize_text, resolve_answer_text, group_answers_by_blank
+from .utils.cache import get_cached_translation
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class EvaluationResult:
@@ -37,12 +44,11 @@ class MultipleChoiceEvaluator(BaseStepEvaluator):
         correct_choices = [c for c in choices if c.is_correct]
         correct_ids = {str(c.id) for c in correct_choices}
         
-        if self.step_detail.allow_multiple:
+        if getattr(self.step_detail, 'allow_multiple', False):
             # For multiple choice (checkbox style), user must select EXACTLY all correct answers
             is_correct = submitted_ids == correct_ids
         else:
             # Standard single choice: just check if the selected one is in the correct set
-            # If multiple were submitted but allow_multiple is false, we take the first one (usually should not happen)
             first_id = list(submitted_ids)[0]
             is_correct = first_id in correct_ids
 
@@ -58,7 +64,58 @@ class MultipleChoiceEvaluator(BaseStepEvaluator):
 
 class FillBlankEvaluator(BaseStepEvaluator):
     def evaluate(self, client_payload: Dict[str, Any]) -> EvaluationResult:
+        lang = client_payload.get('lang', 'en')
         user_answers = client_payload.get('answers', [])
+        
+        # Primary path: Relational StepAnswer objects
+        rel_answers = list(getattr(self.step_detail, 'relational_answers', self.step_detail.relational_answers.none()).all())
+        
+        if not rel_answers:
+            # Fallback to legacy JSON evaluation
+            return self._evaluate_legacy(user_answers)
+
+        answer_groups = group_answers_by_blank(rel_answers)
+        num_blanks = len(answer_groups)
+        
+        if len(user_answers) != num_blanks:
+            return EvaluationResult(is_correct=False, score=0, feedback={"error": "Incomplete input count"})
+
+        correct_count = 0
+        primary_feedback = []
+
+        for i in sorted(answer_groups.keys()):
+            user_val = str(user_answers[i] or "").strip()
+            targets = answer_groups[i]
+            
+            is_match = False
+            best_feedback = ""
+            
+            for target in targets:
+                target_text = resolve_answer_text(target, lang)
+                
+                if target.is_primary and not best_feedback:
+                    best_feedback = target_text
+                
+                nu = normalize_text(user_val, target.case_sensitive, target.ignore_punctuation)
+                nt = normalize_text(target_text, target.case_sensitive, target.ignore_punctuation)
+                
+                if nt and nu == nt:
+                    is_match = True
+                    break
+            
+            primary_feedback.append(best_feedback)
+            if is_match:
+                correct_count += 1
+
+        is_correct = correct_count == num_blanks
+        return EvaluationResult(
+            is_correct=is_correct,
+            score=100 if is_correct else int((correct_count / num_blanks) * 100),
+            feedback={"acceptable_answers": primary_feedback} if not is_correct else {}
+        )
+
+    def _evaluate_legacy(self, user_answers: List[Any]) -> EvaluationResult:
+        # Re-implementation of old logic for backward compatibility
         if not isinstance(user_answers, list) or not user_answers:
             return EvaluationResult(is_correct=False, score=0, feedback={"error": "Answers must be a non-empty list"})
 
@@ -89,7 +146,6 @@ class FillBlankEvaluator(BaseStepEvaluator):
 
 
 class MatchPairsEvaluator(BaseStepEvaluator):
-
     def evaluate(self, client_payload: Dict[str, Any]) -> EvaluationResult:
         submitted_pairs = client_payload.get('pairs', [])  # list of {left_id, right_id}
         if not submitted_pairs:
@@ -99,15 +155,8 @@ class MatchPairsEvaluator(BaseStepEvaluator):
         if len(submitted_pairs) != len(actual_pairs):
             return EvaluationResult(is_correct=False, score=0, feedback={"error": "Incomplete mapping"})
 
-        # Map actual pairs for easier lookup
-        # We'll use IDs of the MatchPairItem rows to identify correctly
         correct_count = 0
         for pair in actual_pairs:
-            # A correct match means the submitted payload has a pair that matches this actual pair row
-            # Usually frontend sends some ID or text. Let's assume frontend sends MatchPairItem IDs for simplicity
-            # or we can compare left/right identifiers.
-            # Production approach: check if left_id maps to correct right_id
-            # Let's assume payload: [{"left_id": item_id, "right_id": item_id}, ...]
             for sub in submitted_pairs:
                 if str(sub.get('left_id')) == str(pair.id) and str(sub.get('right_id')) == str(pair.id):
                     correct_count += 1
@@ -125,8 +174,6 @@ class ReorderSentenceEvaluator(BaseStepEvaluator):
         if not submitted_ids:
             return EvaluationResult(is_correct=False, score=0, feedback={"error": "No tokens submitted"})
 
-        # N+1 Safe: Use Python filtering on prefetched list if available
-        # Get non-distractor tokens in correct order
         all_tokens = list(self.step_detail.tokens.all())
         correct_tokens = sorted(
             [t for t in all_tokens if not t.is_distractor], 
@@ -141,28 +188,19 @@ class ReorderSentenceEvaluator(BaseStepEvaluator):
         return EvaluationResult(is_correct=False, score=0, feedback={"correct_order": correct_ids})
 
 
-class TypeTranslationEvaluator(BaseStepEvaluator):
+class TypeTranslationEvaluator(FillBlankEvaluator):
     def evaluate(self, client_payload: Dict[str, Any]) -> EvaluationResult:
-        user_text = client_payload.get('text', '').strip().lower()
+        user_text = client_payload.get('text', '')
         if not user_text:
             return EvaluationResult(is_correct=False, score=0, feedback={"error": "Text is empty"})
-
-        acceptable = [str(a).strip().lower() for a in self.step_detail.acceptable_answers]
-
-        is_correct = user_text in acceptable
-        score = 100 if is_correct else 0
         
-        return EvaluationResult(
-            is_correct=is_correct, 
-            score=score, 
-            feedback={"acceptable_answers": self.step_detail.acceptable_answers} if not is_correct else {}
-        )
+        # Delegate matching to FillBlank logic by wrapping the single input as a list
+        payload_override = {**client_payload, 'answers': [user_text]}
+        return super().evaluate(payload_override)
 
 
 class SpeakPhraseEvaluator(BaseStepEvaluator):
     def evaluate(self, client_payload: Dict[str, Any]) -> EvaluationResult:
-        # For speaking, the score is calculated by an async provider
-        # The evaluator is used after scoring to determine correctness
         score = client_payload.get('score', 0)
         is_correct = score >= self.step_detail.min_score_required
         

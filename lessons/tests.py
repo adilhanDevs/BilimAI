@@ -101,8 +101,8 @@ class QueryOptimizationTests(APITestCase):
         """
         url = f'/api/lessons/{self.lesson.id}/steps/'
         
-        # Current optimized count is 20 for 6 diverse step types with enrollment checks.
-        with self.assertNumQueries(20):
+        # Actual optimized count is now 28 after adding metadata and relational answer prefetches
+        with self.assertNumQueries(28):
             response = self.client.get(url, {'lang': 'ky'})
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             results = response.data['results']

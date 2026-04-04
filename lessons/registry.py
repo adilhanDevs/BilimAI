@@ -38,7 +38,7 @@ class StepRegistry:
         Generates advanced Prefetch objects for LessonStep based on registered types.
         """
         from django.db.models import Prefetch
-        from .models.engine import ContentUnit, StepChoice, MatchPairItem, ReorderToken
+        from .models.engine import ContentUnit, StepChoice, MatchPairItem, ReorderToken, StepAnswer
         from .models.localization import Translation
         
         # Base queryset for ContentUnits with localized translations if requested
@@ -52,16 +52,27 @@ class StepRegistry:
                 Prefetch('meaning_group__translations', queryset=translation_qs, to_attr='active_translations')
             )
         
-        prefetch_related = []
+        select_related = ['lesson', 'prompt_group', 'instruction_group', 'hint_group', 'grammar_note_group']
+        prefetch_related = [
+            'hint_group__translations',
+            'grammar_note_group__translations',
+        ]
         
         for config in cls._registry.values():
             rel = config.relation_name
             
             if config.step_type == 'multiple_choice':
-                choice_qs = StepChoice.objects.prefetch_related(Prefetch('content_unit', queryset=cu_qs))
+                choice_qs = StepChoice.objects.prefetch_related(
+                    Prefetch('content_unit', queryset=cu_qs),
+                    Prefetch('explanation_group__translations', queryset=translation_qs, to_attr='active_translations') if lang else 'explanation_group'
+                )
                 prefetch_related.append(Prefetch(f"{rel}__choices", queryset=choice_qs))
             elif config.step_type == 'fill_blank':
+                ans_qs = StepAnswer.objects.prefetch_related(
+                    Prefetch('translation_group__translations', queryset=translation_qs, to_attr='active_translations') if lang else 'translation_group'
+                )
                 prefetch_related.append(Prefetch(f"{rel}__source_unit", queryset=cu_qs))
+                prefetch_related.append(Prefetch(f"{rel}__relational_answers", queryset=ans_qs))
             elif config.step_type == 'match_pairs':
                 pair_qs = MatchPairItem.objects.prefetch_related(
                     Prefetch('left_content_unit', queryset=cu_qs),
@@ -72,14 +83,12 @@ class StepRegistry:
                 token_qs = ReorderToken.objects.prefetch_related(Prefetch('content_unit', queryset=cu_qs))
                 prefetch_related.append(Prefetch(f"{rel}__tokens", queryset=token_qs))
             elif config.step_type == 'type_translation':
+                ans_qs = StepAnswer.objects.prefetch_related(
+                    Prefetch('translation_group__translations', queryset=translation_qs, to_attr='active_translations') if lang else 'translation_group'
+                )
                 prefetch_related.append(Prefetch(f"{rel}__source_unit", queryset=cu_qs))
-            elif config.step_type == 'speak_phrase':
-                prefetch_related.append(Prefetch(f"{rel}__target_unit", queryset=cu_qs))
-                if lang:
-                    prefetch_related.append(Prefetch(f"{rel}__target_text_group__translations", queryset=translation_qs, to_attr='active_translations'))
-                else:
-                    prefetch_related.append(f"{rel}__target_text_group")
-                prefetch_related.append(f"{rel}__reference_audio")
+                prefetch_related.append(Prefetch(f"{rel}__source_group__translations", queryset=translation_qs, to_attr='active_translations') if lang else f"{rel}__source_group")
+                prefetch_related.append(Prefetch(f"{rel}__relational_answers", queryset=ans_qs))
 
         return prefetch_related
 

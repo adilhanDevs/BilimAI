@@ -1,5 +1,8 @@
 import uuid
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
+from django.db.models import Q
 from .course import Lesson
 from .localization import TranslationGroup
 
@@ -14,7 +17,7 @@ class LessonStepQuerySet(models.QuerySet):
         from django.db.models import Prefetch
         from .localization import Translation
 
-        select_related = ['lesson', 'prompt_group', 'instruction_group']
+        select_related = ['lesson', 'prompt_group', 'instruction_group', 'hint_group', 'grammar_note_group']
         prefetch_related = []
         
         if lang:
@@ -22,6 +25,8 @@ class LessonStepQuerySet(models.QuerySet):
             prefetch_related.extend([
                 Prefetch('prompt_group__translations', queryset=translation_qs, to_attr='active_translations'),
                 Prefetch('instruction_group__translations', queryset=translation_qs, to_attr='active_translations'),
+                Prefetch('hint_group__translations', queryset=translation_qs, to_attr='active_translations'),
+                Prefetch('grammar_note_group__translations', queryset=translation_qs, to_attr='active_translations'),
             ])
 
         for config in StepRegistry.get_all_configs():
@@ -53,6 +58,19 @@ class LessonStep(models.Model):
     
     xp_reward = models.IntegerField(default=10)
     sort_order = models.IntegerField(default=0)
+
+    # NEW METADATA FIELDS (Phase 1)
+    difficulty = models.PositiveSmallIntegerField(
+        default=1, 
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Difficulty level 1-10"
+    )
+    cefr_level = models.CharField(max_length=2, blank=True, null=True, choices=[
+        ('A1', 'A1'), ('A2', 'A2'), ('B1', 'B1'), ('B2', 'B2'), ('C1', 'C1'), ('C2', 'C2')
+    ])
+    hint_group = models.ForeignKey(TranslationGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    grammar_note_group = models.ForeignKey(TranslationGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    is_optional = models.BooleanField(default=False, help_text="If true, mistakes do not deplete hearts")
 
     objects = LessonStepManager()
 
@@ -139,6 +157,9 @@ class StepChoice(models.Model):
     text = models.CharField(max_length=255, blank=True, null=True)
     is_correct = models.BooleanField(default=False)
     sort_order = models.IntegerField(default=0)
+    
+    # NEW FEEDBACK FIELD (Phase 1)
+    explanation_group = models.ForeignKey(TranslationGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     class Meta:
         ordering = ['sort_order']
@@ -153,6 +174,8 @@ class StepFillBlank(models.Model):
     step = models.OneToOneField(LessonStep, on_delete=models.CASCADE, related_name='detail_fill_blank')
     source_unit = models.ForeignKey(ContentUnit, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     sentence_template = models.TextField(help_text="The sentence with [[blank]] placeholders")
+    
+    # TODO: Phase 3 removal - Deprecated legacy JSON field
     acceptable_answers = models.JSONField(help_text="List of correct strings for the blank(s)")
 
     def clean(self):
@@ -221,6 +244,11 @@ class ReorderToken(models.Model):
 class StepTypeTranslation(models.Model):
     step = models.OneToOneField(LessonStep, on_delete=models.CASCADE, related_name='detail_type_translation')
     source_unit = models.ForeignKey(ContentUnit, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    
+    # NEW SOURCE FIELD (Phase 1)
+    source_group = models.ForeignKey(TranslationGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    
+    # TODO: Phase 3 removal - Deprecated legacy fields
     source_text = models.TextField(blank=True, null=True)
     acceptable_answers = models.JSONField(help_text="List of correct translations")
 
@@ -232,6 +260,88 @@ class StepTypeTranslation(models.Model):
             raise ValidationError("Must have source_unit or source_text")
         if not isinstance(self.acceptable_answers, list) or len(self.acceptable_answers) == 0:
             raise ValidationError("acceptable_answers must be a non-empty list")
+
+
+class StepAnswer(models.Model):
+    """
+    NEW MODEL (Phase 2): Relational answers for FillBlank and TypeTranslation.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Links to detail tables
+    step_fill_blank = models.ForeignKey(StepFillBlank, on_delete=models.CASCADE, null=True, blank=True, related_name='relational_answers')
+    step_type_translation = models.ForeignKey(StepTypeTranslation, on_delete=models.CASCADE, null=True, blank=True, related_name='relational_answers')
+    
+    # Content
+    translation_group = models.ForeignKey(TranslationGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    text_fallback = models.CharField(max_length=255, blank=True, null=True)
+    
+    # Evaluation Logic
+    blank_index = models.PositiveIntegerField(default=0, help_text="Index of the blank in the template (0 for translation)")
+    is_primary = models.BooleanField(default=False, help_text="The main answer to show in feedback")
+    case_sensitive = models.BooleanField(default=False)
+    ignore_punctuation = models.BooleanField(default=True)
+    sort_order = models.IntegerField(default=0)
+    
+    # FUTURE-PROOFING: Support for semantic evaluation
+    answer_embedding = models.JSONField(blank=True, null=True, help_text="Future: Store vector embeddings for AI semantic matching")
+
+    class Meta:
+        ordering = ['blank_index', 'sort_order', '-is_primary']
+        indexes = [
+            # Optimized indexes for evaluator lookups
+            models.Index(fields=['step_fill_blank', 'blank_index', 'is_primary']),
+            models.Index(fields=['step_type_translation', 'blank_index', 'is_primary']),
+            models.Index(fields=['translation_group']),
+        ]
+        constraints = [
+            # Mutual exclusivity constraints
+            models.CheckConstraint(
+                check=(
+                    Q(step_fill_blank__isnull=False, step_type_translation__isnull=True) |
+                    Q(step_fill_blank__isnull=True, step_type_translation__isnull=False)
+                ),
+                name='stepanswer_exclusive_step_fk'
+            ),
+            models.CheckConstraint(
+                check=(
+                    Q(translation_group__isnull=False, text_fallback__isnull=True) |
+                    Q(translation_group__isnull=True, text_fallback__isnull=False) |
+                    Q(translation_group__isnull=False, text_fallback__isnull=False)
+                ),
+                name='stepanswer_content_present'
+            ),
+            # Partial unique indexes for data integrity (1 primary per blank max)
+            models.UniqueConstraint(
+                fields=['step_fill_blank', 'blank_index'],
+                condition=Q(is_primary=True, step_fill_blank__isnull=False),
+                name='unique_primary_fill_blank'
+            ),
+            models.UniqueConstraint(
+                fields=['step_type_translation', 'blank_index'],
+                condition=Q(is_primary=True, step_type_translation__isnull=False),
+                name='unique_primary_type_translation'
+            )
+        ]
+
+    def clean(self):
+        if not self.step_fill_blank and not self.step_type_translation:
+            raise ValidationError("Answer must be linked to a StepFillBlank or StepTypeTranslation.")
+        if self.step_fill_blank and self.step_type_translation:
+            raise ValidationError("Answer cannot be linked to both FillBlank and TypeTranslation.")
+        
+        has_trans = bool(self.translation_group)
+        has_text = bool(self.text_fallback and self.text_fallback.strip())
+        
+        if has_trans and has_text:
+            raise ValidationError("Answer cannot have both translation_group and text_fallback.")
+        if not has_trans and not has_text:
+            raise ValidationError("Answer must have either a translation_group or text_fallback.")
+
+    def __str__(self):
+        source = "FillBlank" if self.step_fill_blank else "TypeTranslation"
+        content = self.text_fallback or f"TG:{self.translation_group_id}"
+        return f"[{source}] Blank {self.blank_index}: {content} ({'Primary' if self.is_primary else 'Alt'})"
 
 
 class StepSpeakPhrase(models.Model):
