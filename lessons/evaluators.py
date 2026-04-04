@@ -19,28 +19,40 @@ class BaseStepEvaluator:
 
 class MultipleChoiceEvaluator(BaseStepEvaluator):
     def evaluate(self, client_payload: Dict[str, Any]) -> EvaluationResult:
-        selected_choice_id = client_payload.get('selected_choice_id')
-        if not selected_choice_id:
-            return EvaluationResult(is_correct=False, score=0, feedback={"error": "Missing selected_choice_id"})
+        selected_id = client_payload.get('selected_choice_id')
+        selected_ids = client_payload.get('selected_choice_ids', [])
+        
+        # Consolidate into a set of strings for easier comparison
+        submitted_ids = set()
+        if selected_id:
+            submitted_ids.add(str(selected_id))
+        for sid in selected_ids:
+            submitted_ids.add(str(sid))
+
+        if not submitted_ids:
+            return EvaluationResult(is_correct=False, score=0, feedback={"error": "No choice selected"})
 
         # N+1 Safe: Use the prefetched choices list if available
-        # This avoids a DB query if the queryset used .prefetch_related('choices')
         choices = list(self.step_detail.choices.all())
+        correct_choices = [c for c in choices if c.is_correct]
+        correct_ids = {str(c.id) for c in correct_choices}
         
-        selected_choice = next((c for c in choices if str(c.id) == str(selected_choice_id)), None)
-        
-        if not selected_choice:
-            return EvaluationResult(is_correct=False, score=0, feedback={"error": "Invalid choice ID"})
+        if self.step_detail.allow_multiple:
+            # For multiple choice (checkbox style), user must select EXACTLY all correct answers
+            is_correct = submitted_ids == correct_ids
+        else:
+            # Standard single choice: just check if the selected one is in the correct set
+            # If multiple were submitted but allow_multiple is false, we take the first one (usually should not happen)
+            first_id = list(submitted_ids)[0]
+            is_correct = first_id in correct_ids
 
-        if selected_choice.is_correct:
+        if is_correct:
             return EvaluationResult(is_correct=True, score=100)
         
-        # Find the correct answer for feedback
-        correct_choice = next((c for c in choices if c.is_correct), None)
         return EvaluationResult(
             is_correct=False, 
             score=0, 
-            feedback={"correct_choice_id": correct_choice.id if correct_choice else None}
+            feedback={"correct_choice_ids": list(correct_ids)}
         )
 
 

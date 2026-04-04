@@ -100,17 +100,18 @@ def initialize_registry():
 
     def mc_extractor(detail, payload):
         selected_id = payload.get('selected_choice_id')
-        if not selected_id: return []
+        selected_ids = payload.get('selected_choice_ids', [])
         
-        # If the attempt is handled as correct (caller should handle result mapping), 
-        # we might want only the correct one. But the generic extractor doesn't know 'is_correct' yet.
-        # Let's adjust the extractor to return the SELECTED unit always.
+        submitted_ids = set()
+        if selected_id: submitted_ids.add(str(selected_id))
+        for sid in selected_ids: submitted_ids.add(str(sid))
+        
+        if not submitted_ids: return []
+        
         choices = detail.choices.all()
-        choice = next((c for c in choices if str(c.id) == str(selected_id)), None)
+        selected_choices = [c for c in choices if str(c.id) in submitted_ids]
         
-        if choice and choice.content_unit:
-            return [choice.content_unit]
-        return []
+        return [c.content_unit for c in selected_choices if c.content_unit]
 
     def source_unit_extractor(detail, payload):
         return [detail.source_unit] if detail.source_unit else []
