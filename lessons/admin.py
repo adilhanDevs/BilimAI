@@ -12,7 +12,7 @@ class StepChoiceInline(admin.TabularInline):
 
 @admin.register(StepMultipleChoice)
 class StepMultipleChoiceAdmin(admin.ModelAdmin):
-    list_display = ['step', 'allow_multiple']
+    list_display = ['step']
     inlines = [StepChoiceInline]
 
 class StepAnswerInline(admin.TabularInline):

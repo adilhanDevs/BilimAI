@@ -44,13 +44,8 @@ class MultipleChoiceEvaluator(BaseStepEvaluator):
         correct_choices = [c for c in choices if c.is_correct]
         correct_ids = {str(c.id) for c in correct_choices}
         
-        if getattr(self.step_detail, 'allow_multiple', False):
-            # For multiple choice (checkbox style), user must select EXACTLY all correct answers
-            is_correct = submitted_ids == correct_ids
-        else:
-            # Standard single choice: just check if the selected one is in the correct set
-            first_id = list(submitted_ids)[0]
-            is_correct = first_id in correct_ids
+        # User must select EXACTLY all correct answers (and only them)
+        is_correct = submitted_ids == correct_ids
 
         if is_correct:
             return EvaluationResult(is_correct=True, score=100)

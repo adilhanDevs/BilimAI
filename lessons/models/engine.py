@@ -143,7 +143,6 @@ class ContentUnit(models.Model):
 
 class StepMultipleChoice(models.Model):
     step = models.OneToOneField(LessonStep, on_delete=models.CASCADE, related_name='detail_multiple_choice')
-    allow_multiple = models.BooleanField(default=False, help_text="If true, user can select multiple options (checkbox style)")
 
     def clean(self):
         from django.core.exceptions import ValidationError

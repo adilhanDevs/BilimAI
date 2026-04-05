@@ -32,7 +32,7 @@ class MultipleChoiceDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StepMultipleChoice
-        fields = ['choices', 'allow_multiple']
+        fields = ['choices']
 
 
 class FillBlankDetailSerializer(serializers.ModelSerializer):
