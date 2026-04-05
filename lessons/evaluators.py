@@ -152,10 +152,14 @@ class MatchPairsEvaluator(BaseStepEvaluator):
 
         correct_count = 0
         for pair in actual_pairs:
-            for sub in submitted_pairs:
-                if str(sub.get('left_id')) == str(pair.id) and str(sub.get('right_id')) == str(pair.id):
-                    correct_count += 1
-                    break
+            # Check if this specific pair ID was correctly matched
+            # Frontend sends left_id and right_id as the MatchPairItem.id
+            is_matched = any(
+                str(sub.get('left_id')) == str(pair.id) and str(sub.get('right_id')) == str(pair.id)
+                for sub in submitted_pairs
+            )
+            if is_matched:
+                correct_count += 1
 
         is_correct = correct_count == len(actual_pairs)
         score = 100 if is_correct else int((correct_count / len(actual_pairs)) * 100)
