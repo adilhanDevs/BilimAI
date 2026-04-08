@@ -29,10 +29,11 @@ class StepChoiceSerializer(serializers.ModelSerializer):
 
 class MultipleChoiceDetailSerializer(serializers.ModelSerializer):
     choices = StepChoiceSerializer(many=True, read_only=True)
+    source_unit = ContentUnitSerializer(read_only=True)
 
     class Meta:
         model = StepMultipleChoice
-        fields = ['choices']
+        fields = ['choices', 'source_unit']
 
 
 class FillBlankDetailSerializer(serializers.ModelSerializer):

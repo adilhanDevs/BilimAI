@@ -404,8 +404,24 @@ class Command(BaseCommand):
         self.stdout.write(f"Imported steps: {len(steps)} items")
 
     def _create_multiple_choice_detail(self, lesson_step: LessonStep, data: Dict[str, Any]) -> None:
+        from ...models.engine import ContentUnit, Asset
+        
+        # Check if this is a "choose what you heard" step
+        source_unit = None
+        if "audio" in data.get("prompt_text", "").lower() or "послушайте" in data.get("prompt_text", "").lower():
+            mock_audio, _ = Asset.objects.get_or_create(
+                file='test.mp3',
+                defaults={'asset_type': 'audio'}
+            )
+            source_unit = ContentUnit.objects.create(
+                unit_type='audio_prompt',
+                text="Audio Prompt",
+                primary_audio=mock_audio
+            )
+
         detail = StepMultipleChoice.objects.create(
             step=lesson_step,
+            source_unit=source_unit
         )
         for choice in data["choices"]:
             StepChoice.objects.create(
@@ -416,19 +432,51 @@ class Command(BaseCommand):
             )
 
     def _create_fill_blank_detail(self, lesson_step: LessonStep, data: Dict[str, Any]) -> None:
+        from ...models.engine import ContentUnit, Asset
+        
+        source_unit = None
+        # Logic to decide if fill_blank needs audio mock
+        # For demo, let's add it if not present
+        mock_audio, _ = Asset.objects.get_or_create(
+            file='test.mp3',
+            defaults={'asset_type': 'audio'}
+        )
+        source_unit = ContentUnit.objects.create(
+            unit_type='sentence',
+            text=data["sentence_template"],
+            primary_audio=mock_audio
+        )
+
         StepFillBlank.objects.create(
             step=lesson_step,
             sentence_template=data["sentence_template"],
             acceptable_answers=data["acceptable_answers"],
+            source_unit=source_unit
         )
 
     def _create_match_pairs_detail(self, lesson_step: LessonStep, data: Dict[str, Any]) -> None:
+        from ...models.engine import ContentUnit, Asset
         detail = StepMatchPairs.objects.create(step=lesson_step)
+        
+        # Mock asset for demonstration
+        mock_audio, _ = Asset.objects.get_or_create(
+            file='test.mp3',
+            defaults={'asset_type': 'audio'}
+        )
+
         for pair in data["pairs"]:
+            # Create a ContentUnit to hold the mock audio
+            left_unit = ContentUnit.objects.create(
+                unit_type='word',
+                text=pair["left_text"],
+                primary_audio=mock_audio
+            )
+            
             MatchPairItem.objects.create(
                 step_detail=detail,
                 left_text=pair["left_text"],
                 right_text=pair["right_text"],
+                left_content_unit=left_unit,
                 sort_order=pair["sort_order"],
             )
 

@@ -143,6 +143,7 @@ class ContentUnit(models.Model):
 
 class StepMultipleChoice(models.Model):
     step = models.OneToOneField(LessonStep, on_delete=models.CASCADE, related_name='detail_multiple_choice')
+    source_unit = models.ForeignKey(ContentUnit, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     def clean(self):
         from django.core.exceptions import ValidationError

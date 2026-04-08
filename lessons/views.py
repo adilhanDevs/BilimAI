@@ -142,6 +142,49 @@ class LessonStepViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = SessionStatusSerializer(session)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=['post'], url_path='restart')
+    def restart(self, request, pk=None):
+        from .models.progress import LessonSession, UserLessonProgress
+        from .serializers import SessionStatusSerializer
+        from django.db.models import Count
+        
+        # Verify enrollment
+        try:
+            lesson = Lesson.objects.select_related('category__course').get(id=pk)
+            if not CourseEnrollmentService.is_enrolled(request.user, lesson.category.course):
+                return Response({"detail": "User is not enrolled in this course."}, status=status.HTTP_403_FORBIDDEN)
+        except Lesson.DoesNotExist:
+            return Response({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # 1. Mark all existing active sessions for this lesson as abandoned
+        LessonSession.objects.filter(
+            user=request.user,
+            lesson_id=pk,
+            status='active'
+        ).update(status='abandoned')
+
+        # 2. Create a fresh session
+        session = LessonSession.objects.create(
+            user=request.user,
+            lesson_id=pk,
+            status='active'
+        )
+        
+        # Re-fetch with annotation
+        session = LessonSession.objects.annotate(
+            total_steps_count=Count('lesson__steps')
+        ).get(id=session.id)
+        
+        # 3. Update UserLessonProgress
+        progress, _ = UserLessonProgress.objects.get_or_create(user=request.user, lesson_id=pk)
+        progress.last_session = session
+        progress.total_sessions += 1
+        progress.status = 'in_progress'
+        progress.save()
+
+        serializer = SessionStatusSerializer(session)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class ReviewQueueViewSet(viewsets.ReadOnlyModelViewSet):
     """
